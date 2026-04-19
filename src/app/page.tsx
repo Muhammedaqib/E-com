@@ -22,13 +22,20 @@ export default async function Dashboard(props: {
   searchParams: Promise<{ filter?: string; category?: string; search?: string }> 
 }) {
   const session = await getServerSession(authOptions);
-  if (!session) redirect("/login");
+  if (!session?.user) redirect("/login");
+
+  // Fetch fresh user data from DB
+  const dbUser = await prisma.user.findUnique({
+    where: { id: (session.user as any).id }
+  });
+
+  if (!dbUser) redirect("/login");
 
   const searchParams = await props.searchParams;
   const { filter, category, search } = searchParams;
 
   // Build Prisma Query
-  const where: any = { userId: (session.user as any).id };
+  const where: any = { userId: dbUser.id };
   
   if (filter === "important") where.priority = "high";
   if (filter === "upcoming") where.dueDate = { gte: new Date() };
@@ -124,7 +131,7 @@ export default async function Dashboard(props: {
               className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-950 border-none rounded-xl text-sm dark:text-white focus:ring-2 focus:ring-indigo-100 dark:focus:ring-indigo-900 transition-all outline-none"
             />
           </form>
-          <HeaderActions user={session.user} />
+          <HeaderActions user={{ id: dbUser.id, name: dbUser.username, email: dbUser.email }} />
         </header>
 
         {/* Dashboard View */}
@@ -133,7 +140,7 @@ export default async function Dashboard(props: {
             <div className="flex items-end justify-between mb-8">
               <div>
                 <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
-                  {category ? `${category} Tasks` : filter === "important" ? "Important Tasks" : filter === "upcoming" ? "Upcoming Tasks" : "All Tasks"}
+                  Good morning, {dbUser.username}
                 </h1>
                 <p className="text-slate-500 dark:text-slate-400 font-medium">You have {pendingCount} tasks remaining.</p>
               </div>
