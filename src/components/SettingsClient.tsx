@@ -15,13 +15,16 @@ import {
   Moon,
   Mail,
   Check,
-  Loader2
+  Loader2,
+  AlertCircle
 } from "lucide-react";
+import { updateProfile, changePassword } from "@/lib/auth-actions";
 
 export function SettingsClient({ user }: { user: any }) {
   const [activeTab, setActiveTab] = useState("Profile");
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   
@@ -32,25 +35,45 @@ export function SettingsClient({ user }: { user: any }) {
     activity: false
   });
 
-  // Prevent hydration mismatch
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const tabs = [
-    { icon: User, label: "Profile" },
-    { icon: Shield, label: "Security" },
-    { icon: Bell, label: "Notifications" },
-    { icon: Palette, label: "Appearance" },
-  ];
-
-  const handleSave = () => {
+  const handleProfileSave = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    setError(null);
+    setIsSaved(false);
+
+    const formData = new FormData(e.currentTarget);
+    const result = await updateProfile(formData);
+
+    setIsSaving(false);
+    if (result.error) {
+      setError(result.error);
+    } else {
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 3000);
-    }, 1000);
+    }
+  };
+
+  const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setError(null);
+    setIsSaved(false);
+
+    const formData = new FormData(e.currentTarget);
+    const result = await changePassword(formData);
+
+    setIsSaving(false);
+    if (result.error) {
+      setError(result.error);
+    } else {
+      setIsSaved(true);
+      (e.target as HTMLFormElement).reset();
+      setTimeout(() => setIsSaved(false), 3000);
+    }
   };
 
   const toggleNotification = (key: keyof typeof notifications) => {
@@ -60,7 +83,7 @@ export function SettingsClient({ user }: { user: any }) {
   if (!mounted) return null;
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto animate-in fade-in duration-500">
       <Link 
         href="/" 
         className="inline-flex items-center gap-2 text-sm font-bold text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors mb-8 group"
@@ -74,10 +97,16 @@ export function SettingsClient({ user }: { user: any }) {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
         {/* Settings Tabs */}
         <div className="md:col-span-4 space-y-2">
-          {tabs.map((tab) => (
+          {[
+            { icon: User, label: "Profile" },
+            { icon: Lock, label: "Password" },
+            { icon: Shield, label: "Security" },
+            { icon: Bell, label: "Notifications" },
+            { icon: Palette, label: "Appearance" },
+          ].map((tab) => (
             <button 
               key={tab.label}
-              onClick={() => setActiveTab(tab.label)}
+              onClick={() => { setActiveTab(tab.label); setError(null); setIsSaved(false); }}
               className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition-all ${
                 activeTab === tab.label 
                   ? "bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-sm border border-slate-200 dark:border-slate-800" 
@@ -96,18 +125,26 @@ export function SettingsClient({ user }: { user: any }) {
             {activeTab === "Profile" && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <h2 className="text-2xl font-bold mb-6 dark:text-white">Profile Information</h2>
-                <div className="space-y-6">
+                <form onSubmit={handleProfileSave} className="space-y-6">
                   <div>
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Username</label>
-                    <input type="text" defaultValue={user?.name || ""} className="w-full bg-slate-50 dark:bg-slate-950 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none" />
+                    <input name="username" type="text" defaultValue={user?.name || ""} required className="w-full bg-slate-50 dark:bg-slate-950 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none" />
                   </div>
                   <div>
                     <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Email Address</label>
-                    <input type="email" defaultValue={user?.email || ""} className="w-full bg-slate-50 dark:bg-slate-950 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none" />
+                    <input name="email" type="email" defaultValue={user?.email || ""} required className="w-full bg-slate-50 dark:bg-slate-950 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none" />
                   </div>
+                  
+                  {error && (
+                    <div className="flex items-center gap-2 text-red-500 text-sm font-bold bg-red-50 dark:bg-red-950/20 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
+                      <AlertCircle size={18} />
+                      {error}
+                    </div>
+                  )}
+
                   <div className="pt-4">
                     <button 
-                      onClick={handleSave} 
+                      type="submit"
                       disabled={isSaving}
                       className={`min-w-[160px] flex items-center justify-center gap-2 py-3 px-8 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98] ${
                         isSaved ? "bg-green-500 text-white shadow-green-100" : "bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700"
@@ -117,7 +154,43 @@ export function SettingsClient({ user }: { user: any }) {
                       {isSaving ? "Saving..." : isSaved ? "Saved Successfully!" : "Save Changes"}
                     </button>
                   </div>
-                </div>
+                </form>
+              </div>
+            )}
+
+            {activeTab === "Password" && (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <h2 className="text-2xl font-bold mb-6 dark:text-white">Change Password</h2>
+                <form onSubmit={handlePasswordChange} className="space-y-6">
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Current Password</label>
+                    <input name="currentPassword" type="password" required className="w-full bg-slate-50 dark:bg-slate-950 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none" placeholder="••••••••" />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">New Password</label>
+                    <input name="newPassword" type="password" required className="w-full bg-slate-50 dark:bg-slate-950 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 dark:text-white transition-all outline-none" placeholder="••••••••" />
+                  </div>
+                  
+                  {error && (
+                    <div className="flex items-center gap-2 text-red-500 text-sm font-bold bg-red-50 dark:bg-red-950/20 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
+                      <AlertCircle size={18} />
+                      {error}
+                    </div>
+                  )}
+
+                  <div className="pt-4">
+                    <button 
+                      type="submit"
+                      disabled={isSaving}
+                      className={`min-w-[160px] flex items-center justify-center gap-2 py-3 px-8 rounded-xl font-bold shadow-lg transition-all active:scale-[0.98] ${
+                        isSaved ? "bg-green-500 text-white shadow-green-100" : "bg-indigo-600 text-white shadow-indigo-200 hover:bg-indigo-700"
+                      }`}
+                    >
+                      {isSaving ? <Loader2 size={20} className="animate-spin" /> : isSaved ? <Check size={20} /> : null}
+                      {isSaving ? "Updating..." : isSaved ? "Password Updated!" : "Update Password"}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
 
@@ -125,25 +198,15 @@ export function SettingsClient({ user }: { user: any }) {
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <h2 className="text-2xl font-bold mb-6 dark:text-white">Security Settings</h2>
                 <div className="space-y-4">
-                  <div className="p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl flex items-center justify-between border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 transition-all group">
-                    <div className="flex items-center gap-4">
+                  <div className="p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl flex items-center justify-between border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 transition-all group text-left">
+                    <div className="flex items-center gap-4 text-left">
                       <div className="bg-white dark:bg-slate-900 p-3 rounded-xl text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800 shadow-sm"><Lock size={24} /></div>
-                      <div>
+                      <div className="text-left">
                         <p className="text-sm font-bold dark:text-white">Two-Factor Authentication</p>
                         <p className="text-xs text-slate-400">Add an extra layer of security</p>
                       </div>
                     </div>
                     <button className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 px-4 py-2 rounded-lg transition-colors">Enable</button>
-                  </div>
-                  <div className="p-6 bg-slate-50 dark:bg-slate-950 rounded-2xl flex items-center justify-between border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900 transition-all group">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-white dark:bg-slate-900 p-3 rounded-xl text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-800 shadow-sm"><Smartphone size={24} /></div>
-                      <div>
-                        <p className="text-sm font-bold dark:text-white">Active Sessions</p>
-                        <p className="text-xs text-slate-400">Manage your logged in devices</p>
-                      </div>
-                    </div>
-                    <button className="text-sm font-bold text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950/30 px-4 py-2 rounded-lg transition-colors">View All</button>
                   </div>
                 </div>
               </div>
@@ -185,7 +248,7 @@ export function SettingsClient({ user }: { user: any }) {
             {activeTab === "Appearance" && (
               <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <h2 className="text-2xl font-bold mb-6 dark:text-white">Appearance</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
                   <button 
                     onClick={() => setTheme("light")}
                     className={`p-6 rounded-2xl text-left transition-all ${
@@ -216,7 +279,7 @@ export function SettingsClient({ user }: { user: any }) {
           </div>
 
           {activeTab === "Profile" && (
-            <div className="mt-8 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-3xl p-8">
+            <div className="mt-8 bg-red-50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/30 rounded-3xl p-8 text-left">
               <h2 className="text-xl font-bold text-red-900 dark:text-red-400 mb-2 flex items-center gap-2">
                 <Shield size={20} className="text-red-500" />
                 Danger Zone
