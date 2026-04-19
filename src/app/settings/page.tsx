@@ -8,7 +8,7 @@ export default async function SettingsPage() {
   if (!session) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans p-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans p-8 transition-colors duration-300">
       <SettingsClient user={session.user} />
     </div>
   );
