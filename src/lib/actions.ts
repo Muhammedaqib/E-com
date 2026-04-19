@@ -11,7 +11,7 @@ async function getSession() {
 
 export async function createTask(formData: FormData) {
   const session = await getSession();
-  if (!session?.user) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Unauthorized");
 
   const title = formData.get("title") as string;
   const description = formData.get("description") as string;
@@ -20,7 +20,7 @@ export async function createTask(formData: FormData) {
 
   await prisma.task.create({
     data: {
-      userId: (session.user as any).id,
+      userId: session.user.id,
       title,
       description,
       priority,
@@ -33,7 +33,7 @@ export async function createTask(formData: FormData) {
 
 export async function toggleTaskStatus(id: string, currentStatus: string) {
   const session = await getSession();
-  if (!session?.user) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Unauthorized");
 
   const newStatus = currentStatus === "completed" ? "pending" : "completed";
   const completedAt = newStatus === "completed" ? new Date() : null;
@@ -51,7 +51,7 @@ export async function toggleTaskStatus(id: string, currentStatus: string) {
 
 export async function deleteTask(id: string) {
   const session = await getSession();
-  if (!session?.user) throw new Error("Unauthorized");
+  if (!session?.user?.id) throw new Error("Unauthorized");
 
   await prisma.task.delete({
     where: { id },

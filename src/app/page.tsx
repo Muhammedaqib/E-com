@@ -22,11 +22,11 @@ export default async function Dashboard(props: {
   searchParams: Promise<{ filter?: string; category?: string; search?: string }> 
 }) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) redirect("/login");
+  if (!session?.user?.id) redirect("/login");
 
   // Fetch fresh user data from DB
   const dbUser = await prisma.user.findUnique({
-    where: { id: (session.user as any).id }
+    where: { id: session.user.id }
   });
 
   if (!dbUser) redirect("/login");
