@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { createTask, toggleTaskStatus, deleteTask } from "@/lib/actions";
 import Link from "next/link";
+import { HeaderActions } from "@/components/HeaderActions";
 import { 
   CheckCircle2, 
   Circle, 
@@ -15,8 +16,6 @@ import {
   Tag, 
   LogOut,
   Search,
-  Settings,
-  User as UserIcon
 } from "lucide-react";
 
 export default async function Dashboard(props: { 
@@ -123,14 +122,7 @@ export default async function Dashboard(props: {
               className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 transition-all outline-none"
             />
           </form>
-          <div className="flex items-center gap-4">
-            <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">
-              <Settings size={20} />
-            </button>
-            <div className="h-8 w-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700">
-              <UserIcon size={20} />
-            </div>
-          </div>
+          <HeaderActions user={session.user} />
         </header>
 
         {/* Dashboard View */}
