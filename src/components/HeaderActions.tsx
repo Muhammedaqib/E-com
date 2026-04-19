@@ -43,6 +43,13 @@ export function HeaderActions({ user }: { user: any }) {
             <p className="text-xs text-slate-500 truncate">{user.email}</p>
           </div>
           
+          {user.role === "admin" && (
+            <Link href="/admin" className="flex items-center gap-3 px-4 py-2 text-sm text-indigo-600 font-bold hover:bg-indigo-50 transition-colors">
+              <Shield size={18} />
+              Admin Dashboard
+            </Link>
+          )}
+
           <Link href="/settings" className="flex items-center gap-3 px-4 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors">
             <UserCircle size={18} />
             Profile Settings

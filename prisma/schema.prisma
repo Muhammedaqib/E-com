@@ -18,6 +18,7 @@ model User {
   lastLogin     DateTime?
   isActive      Boolean   @default(true)
   tasks         Task[]
+  activities    ActivityLog[]
 }
 
 model Task {
@@ -33,4 +34,14 @@ model Task {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   completedAt   DateTime?
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
 }
