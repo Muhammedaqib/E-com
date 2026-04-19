@@ -19,20 +19,41 @@ import {
   User as UserIcon
 } from "lucide-react";
 
-export default async function Dashboard() {
+export default async function Dashboard(props: { 
+  searchParams: Promise<{ filter?: string; category?: string; search?: string }> 
+}) {
   const session = await getServerSession(authOptions);
+  if (!session) redirect("/login");
 
-  if (!session) {
-    redirect("/login");
-  }
+  const searchParams = await props.searchParams;
+  const { filter, category, search } = searchParams;
+
+  // Build Prisma Query
+  const where: any = { userId: (session.user as any).id };
+  
+  if (filter === "important") where.priority = "high";
+  if (filter === "upcoming") where.dueDate = { gte: new Date() };
+  if (category) where.category = category;
+  if (search) where.title = { contains: search };
 
   const tasks = await prisma.task.findMany({
-    where: { userId: (session.user as any).id },
+    where,
     orderBy: { createdAt: "desc" },
   });
 
   const completedCount = tasks.filter(t => t.status === "completed").length;
   const pendingCount = tasks.length - completedCount;
+
+  const isActive = (f?: string, c?: string) => {
+    if (c) return category === c;
+    if (f) return filter === f;
+    return !filter && !category;
+  };
+
+  const navClass = (active: boolean) => 
+    `flex items-center gap-3 px-3 py-2 rounded-lg font-medium transition-colors ${
+      active ? "text-indigo-600 bg-indigo-50" : "text-slate-600 hover:bg-slate-50"
+    }`;
 
   return (
     <div className="flex h-screen bg-[#F8FAFC] text-slate-900 font-sans overflow-hidden">
@@ -47,32 +68,34 @@ export default async function Dashboard() {
           </div>
 
           <nav className="space-y-1">
-            <Link href="/" className="flex items-center gap-3 px-3 py-2 text-indigo-600 bg-indigo-50 rounded-lg font-medium">
+            <Link href="/" className={navClass(isActive())}>
               <LayoutDashboard size={20} />
               <span>All Tasks</span>
             </Link>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+            <Link href="/?filter=upcoming" className={navClass(isActive("upcoming"))}>
               <Calendar size={20} />
               <span>Upcoming</span>
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
+            </Link>
+            <Link href="/?filter=important" className={navClass(isActive("important"))}>
               <Flag size={20} />
               <span>Important</span>
-            </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors">
-              <Tag size={20} />
-              <span>Categories</span>
-            </button>
+            </Link>
           </nav>
 
           <div className="mt-10">
             <p className="px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">My Lists</p>
             <div className="space-y-1">
               {["Personal", "Work", "Ideas"].map(list => (
-                <button key={list} className="w-full flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-colors group">
-                  <div className="w-2 h-2 rounded-full bg-slate-300 group-hover:bg-indigo-400 transition-colors"></div>
+                <Link 
+                  key={list} 
+                  href={`/?category=${list}`} 
+                  className={navClass(isActive(undefined, list))}
+                >
+                  <div className={`w-2 h-2 rounded-full transition-colors ${
+                    isActive(undefined, list) ? "bg-indigo-400" : "bg-slate-300"
+                  }`}></div>
                   <span>{list}</span>
-                </button>
+                </Link>
               ))}
             </div>
           </div>
@@ -90,14 +113,16 @@ export default async function Dashboard() {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header */}
         <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-8">
-          <div className="relative w-96 max-w-full">
+          <form className="relative w-96 max-w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
+              name="search"
               type="text" 
               placeholder="Search tasks..." 
+              defaultValue={search}
               className="w-full pl-10 pr-4 py-2 bg-slate-50 border-none rounded-xl text-sm focus:ring-2 focus:ring-indigo-100 transition-all outline-none"
             />
-          </div>
+          </form>
           <div className="flex items-center gap-4">
             <button className="p-2 text-slate-500 hover:bg-slate-50 rounded-lg transition-colors">
               <Settings size={20} />
@@ -113,17 +138,15 @@ export default async function Dashboard() {
           <div className="max-w-5xl mx-auto">
             <div className="flex items-end justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-slate-900 mb-2">Good morning, {session.user?.name}</h1>
-                <p className="text-slate-500 font-medium">You have {pendingCount} tasks to complete today.</p>
+                <h1 className="text-3xl font-bold text-slate-900 mb-2">
+                  {category ? `${category} Tasks` : filter === "important" ? "Important Tasks" : filter === "upcoming" ? "Upcoming Tasks" : "All Tasks"}
+                </h1>
+                <p className="text-slate-500 font-medium">You have {pendingCount} tasks remaining.</p>
               </div>
               <div className="flex gap-3">
                 <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex flex-col">
                   <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Completed</span>
                   <span className="text-xl font-bold text-slate-900">{completedCount}</span>
-                </div>
-                <div className="bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm flex flex-col">
-                  <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Efficiency</span>
-                  <span className="text-xl font-bold text-slate-900">{tasks.length ? Math.round((completedCount/tasks.length)*100) : 0}%</span>
                 </div>
               </div>
             </div>
@@ -131,18 +154,13 @@ export default async function Dashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               {/* Task Section */}
               <div className="lg:col-span-8 space-y-4">
-                <div className="flex items-center justify-between mb-2">
-                  <h2 className="text-lg font-bold">Upcoming Tasks</h2>
-                  <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-700">View All</button>
-                </div>
-
                 {tasks.length === 0 ? (
                   <div className="bg-white border-2 border-dashed border-slate-200 rounded-2xl p-12 text-center">
                     <div className="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-300">
                       <CheckCircle2 size={32} />
                     </div>
-                    <p className="text-slate-500 font-medium mb-1">No tasks yet</p>
-                    <p className="text-sm text-slate-400">Add your first task to get started</p>
+                    <p className="text-slate-500 font-medium mb-1">No tasks found</p>
+                    <Link href="/" className="text-sm text-indigo-600 font-bold">Clear all filters</Link>
                   </div>
                 ) : (
                   tasks.map((task) => (
@@ -151,16 +169,10 @@ export default async function Dashboard() {
                         <button
                           type="submit"
                           className={`flex-shrink-0 transition-colors ${
-                            task.status === "completed"
-                              ? "text-green-500"
-                              : "text-slate-300 hover:text-indigo-400"
+                            task.status === "completed" ? "text-green-500" : "text-slate-300 hover:text-indigo-400"
                           }`}
                         >
-                          {task.status === "completed" ? (
-                            <CheckCircle2 size={24} />
-                          ) : (
-                            <Circle size={24} />
-                          )}
+                          {task.status === "completed" ? <CheckCircle2 size={24} /> : <Circle size={24} />}
                         </button>
                       </form>
                       
@@ -193,49 +205,41 @@ export default async function Dashboard() {
                 )}
               </div>
 
-              {/* Sidebar/Action Section */}
+              {/* Action Section */}
               <div className="lg:col-span-4">
                 <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 sticky top-8">
-                  <h2 className="text-lg font-bold mb-6 flex items-center gap-2">
-                    <Plus size={20} className="text-indigo-600" />
+                  <h2 className="text-lg font-bold mb-6 flex items-center gap-2 text-indigo-600">
+                    <Plus size={20} />
                     New Task
                   </h2>
                   <form action={createTask} className="space-y-4">
                     <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Task Title</label>
-                      <input
-                        type="text"
-                        name="title"
-                        placeholder="What needs to be done?"
-                        required
-                        className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none"
-                      />
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Title</label>
+                      <input name="title" required className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none" />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Notes (Optional)</label>
-                      <textarea
-                        name="description"
-                        placeholder="Add some details..."
-                        className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none resize-none h-24"
-                      ></textarea>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">List / Category</label>
+                      <select name="category" className="w-full bg-slate-50 border-none rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-indigo-500/20 transition-all outline-none appearance-none">
+                        <option value="Personal">Personal</option>
+                        <option value="Work">Work</option>
+                        <option value="Ideas">Ideas</option>
+                        <option value="General">General</option>
+                      </select>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Priority Level</label>
+                      <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2 block">Priority</label>
                       <div className="grid grid-cols-3 gap-2">
                         {["low", "medium", "high"].map((p) => (
-                          <label key={p} className="cursor-pointer group">
+                          <label key={p} className="cursor-pointer">
                             <input type="radio" name="priority" value={p} defaultChecked={p === "medium"} className="sr-only peer" />
-                            <div className="text-center py-2 px-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-slate-100 bg-slate-50 text-slate-400 peer-checked:bg-white peer-checked:border-indigo-600 peer-checked:text-indigo-600 peer-checked:shadow-sm transition-all">
+                            <div className="text-center py-2 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-slate-100 bg-slate-50 text-slate-400 peer-checked:bg-white peer-checked:border-indigo-600 peer-checked:text-indigo-600 transition-all uppercase">
                               {p}
                             </div>
                           </label>
                         ))}
                       </div>
                     </div>
-                    <button
-                      type="submit"
-                      className="w-full bg-indigo-600 text-white py-3 px-4 rounded-xl hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-4"
-                    >
+                    <button type="submit" className="w-full bg-indigo-600 text-white py-3 px-4 rounded-xl hover:bg-indigo-700 font-bold shadow-lg shadow-indigo-200 transition-all active:scale-[0.98] mt-4">
                       Create Task
                     </button>
                   </form>
