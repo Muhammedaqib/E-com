@@ -17,8 +17,6 @@ export async function createTask(formData: FormData) {
   const description = formData.get("description") as string;
   const priority = (formData.get("priority") as string) || "medium";
   const category = (formData.get("category") as string) || "general";
-  const dueDateStr = formData.get("dueDate") as string;
-  const dueDate = dueDateStr ? new Date(dueDateStr) : null;
 
   await prisma.task.create({
     data: {
@@ -27,7 +25,6 @@ export async function createTask(formData: FormData) {
       description,
       priority,
       category,
-      dueDate,
     },
   });
 
