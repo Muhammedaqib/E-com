@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { formatMoney } from "@/lib/format";
+import { getCartWithItems } from "@/lib/cart-data";
 import { prisma } from "@/lib/prisma";
 import { CheckoutForm } from "@/components/CheckoutForm";
 
@@ -10,15 +11,11 @@ export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {
   const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) {
+  const cart = await getCartWithItems();
+
+  if (!session?.user?.id) {
     redirect("/login?callbackUrl=/checkout");
   }
-
-  const cart = await prisma.cart.findUnique({
-    where: { userId },
-    include: { items: { include: { product: true } } },
-  });
 
   if (!cart || cart.items.length === 0) {
     return (
