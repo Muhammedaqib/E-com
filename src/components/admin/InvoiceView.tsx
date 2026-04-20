@@ -34,6 +34,7 @@ export function InvoiceView({ order }: { order: any }) {
     const newItem = {
       id: `new-${Date.now()}`,
       title: "New Item",
+      description: "",
       price: 0,
       quantity: 1,
       productId: "CUSTOM"
@@ -141,15 +142,30 @@ export function InvoiceView({ order }: { order: any }) {
               <tr key={item.id} className="text-sm">
                 <td className="py-6">
                   {isEditing ? (
-                    <input 
-                      className="w-full border p-1 dark:bg-slate-950 dark:border-slate-700" 
-                      value={item.title} 
-                      onChange={e => handleItemChange(item.id, 'title', e.target.value)} 
-                    />
+                    <div className="space-y-1">
+                      <input 
+                        className="w-full border p-1 font-bold dark:bg-slate-950 dark:border-slate-700" 
+                        value={item.title} 
+                        onChange={e => handleItemChange(item.id, 'title', e.target.value)} 
+                        placeholder="Item title"
+                      />
+                      <textarea 
+                        className="w-full border p-1 text-xs dark:bg-slate-950 dark:border-slate-700" 
+                        value={item.description || ""} 
+                        onChange={e => handleItemChange(item.id, 'description', e.target.value)} 
+                        placeholder="Detailed description (optional)"
+                        rows={2}
+                      />
+                    </div>
                   ) : (
-                    <p className="font-bold text-slate-900 dark:text-white">{item.title}</p>
+                    <div>
+                      <p className="font-bold text-slate-900 dark:text-white">{item.title}</p>
+                      {item.description && (
+                        <p className="mt-1 text-xs text-slate-500 whitespace-pre-wrap">{item.description}</p>
+                      )}
+                    </div>
                   )}
-                  <p className="text-xs text-slate-400 mt-1">ID: {item.productId}</p>
+                  <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-tight">ID: {item.productId || 'Manual'}</p>
                 </td>
                 <td className="py-6 text-center">
                   {isEditing ? (
