@@ -67,13 +67,12 @@ export async function updateInvoiceAction(orderId: number, data: any) {
           where: { id: { in: idsToDelete } }
         });
       }
-
       // Update existing or Create new items
       for (const item of items) {
         if (item.id.startsWith("new-")) {
           await tx.orderItem.create({
             data: {
-              orderId,
+              orderId: orderId,
               title: item.title,
               price: item.price,
               quantity: item.quantity,
