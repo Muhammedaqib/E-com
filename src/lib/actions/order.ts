@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { getCartWithItems } from "@/lib/cart-data";
 
 const addressSchema = z.object({
   fullName: z.string().min(1).max(200),
@@ -21,6 +22,16 @@ export async function placeOrderAction(formData: FormData) {
     return { error: "Sign in required" };
   }
 
+  // Verify user still exists in DB (handle stale sessions)
+  const userExists = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true }
+  });
+
+  if (!userExists) {
+    return { error: "User session is invalid. Please sign out and sign in again." };
+  }
+
   const parsed = addressSchema.safeParse({
     fullName: formData.get("fullName"),
     line1: formData.get("line1"),
@@ -29,18 +40,15 @@ export async function placeOrderAction(formData: FormData) {
     postalCode: formData.get("postalCode"),
     phone: formData.get("phone"),
   });
+
   if (!parsed.success) {
-    return { error: parsed.error.flatten().fieldErrors };
+    return { error: "Please fill in all required address fields correctly." };
   }
 
   const address = parsed.data;
 
-  const cart = await prisma.cart.findUnique({
-    where: { userId: session.user.id },
-    include: {
-      items: { include: { product: true } },
-    },
-  });
+  // Use robust cart resolution
+  const cart = await getCartWithItems();
 
   if (!cart || cart.items.length === 0) {
     return { error: "Your cart is empty" };
@@ -86,15 +94,17 @@ export async function placeOrderAction(formData: FormData) {
         });
       }
 
+      // Important: delete the items from the specific cart we found
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
     });
   } catch (error) {
     console.error("Order placement error:", error);
-    return { error: "Could not place order. Try again." };
+    return { error: "Could not place order. Please check your details and try again." };
   }
 
   revalidatePath("/cart");
   revalidatePath("/orders");
+  revalidatePath("/", "layout");
   redirect("/orders?placed=1");
 }
 
