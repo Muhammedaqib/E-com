@@ -53,8 +53,13 @@ export async function updateInvoiceAction(orderId: number, data: any) {
         where: { orderId }
       });
       const currentIds = currentItems.map(i => i.id);
-      const newIds = items.filter(i => !i.id.startsWith("new-")).map(i => i.id);
-      const idsToDelete = currentIds.filter(id => !newIds.includes(id));
+      
+      // Items that should stay (those with existing IDs)
+      const existingItemsFromData = items.filter(i => !i.id.startsWith("new-"));
+      const existingIdsFromData = existingItemsFromData.map(i => i.id);
+      
+      // Items to delete (present in DB but not in new data)
+      const idsToDelete = currentIds.filter(id => !existingIdsFromData.includes(id));
 
       if (idsToDelete.length > 0) {
         await tx.orderItem.deleteMany({
@@ -70,7 +75,8 @@ export async function updateInvoiceAction(orderId: number, data: any) {
               orderId,
               title: item.title,
               price: item.price,
-              quantity: item.quantity
+              quantity: item.quantity,
+              productId: null // Explicitly set to null for custom items
             }
           });
         } else {
@@ -88,10 +94,12 @@ export async function updateInvoiceAction(orderId: number, data: any) {
 
     revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath(`/admin/orders/${orderId}/invoice`);
+    revalidatePath(`/admin/orders`);
     revalidatePath(`/orders`);
+    revalidatePath(`/orders/${orderId}/invoice`);
     return { success: true };
-  } catch (err) {
-    console.error(err);
-    return { error: "Failed to update invoice" };
+  } catch (err: any) {
+    console.error("Invoice update error:", err);
+    return { error: err.message || "Failed to update invoice in database" };
   }
 }
