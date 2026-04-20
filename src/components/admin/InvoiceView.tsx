@@ -156,8 +156,8 @@ export function InvoiceView({ order }: { order: any }) {
                     <input 
                       type="number" 
                       className="w-24 border p-1 text-center dark:bg-slate-950 dark:border-slate-700" 
-                      value={item.price} 
-                      onChange={e => handleItemChange(item.id, 'price', parseInt(e.target.value, 10))} 
+                      value={isNaN(item.price) ? "" : item.price} 
+                      onChange={e => handleItemChange(item.id, 'price', parseInt(e.target.value, 10) || 0)} 
                     />
                   ) : (
                     formatMoney(item.price)
@@ -168,8 +168,8 @@ export function InvoiceView({ order }: { order: any }) {
                     <input 
                       type="number" 
                       className="w-16 border p-1 text-center dark:bg-slate-950 dark:border-slate-700" 
-                      value={item.quantity} 
-                      onChange={e => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10))} 
+                      value={isNaN(item.quantity) ? "" : item.quantity} 
+                      onChange={e => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10) || 0)} 
                     />
                   ) : (
                     item.quantity

@@ -48,16 +48,42 @@ export async function updateInvoiceAction(orderId: number, data: any) {
         data: { address, total: newTotal }
       });
 
-      // Update items
-      for (const item of items) {
-        await tx.orderItem.update({
-          where: { id: item.id },
-          data: {
-            title: item.title,
-            price: item.price,
-            quantity: item.quantity
-          }
+      // Get current items to find which ones to delete
+      const currentItems = await tx.orderItem.findMany({
+        where: { orderId }
+      });
+      const currentIds = currentItems.map(i => i.id);
+      const newIds = items.filter(i => !i.id.startsWith("new-")).map(i => i.id);
+      const idsToDelete = currentIds.filter(id => !newIds.includes(id));
+
+      if (idsToDelete.length > 0) {
+        await tx.orderItem.deleteMany({
+          where: { id: { in: idsToDelete } }
         });
+      }
+
+      // Update existing or Create new items
+      for (const item of items) {
+        if (item.id.startsWith("new-")) {
+          await tx.orderItem.create({
+            data: {
+              orderId,
+              productId: "CUSTOM", // Use a placeholder for custom items
+              title: item.title,
+              price: item.price,
+              quantity: item.quantity
+            }
+          });
+        } else {
+          await tx.orderItem.update({
+            where: { id: item.id },
+            data: {
+              title: item.title,
+              price: item.price,
+              quantity: item.quantity
+            }
+          });
+        }
       }
     });
 
