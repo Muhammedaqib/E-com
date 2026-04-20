@@ -72,7 +72,7 @@ export async function updateInvoiceAction(orderId: number, data: any) {
         if (item.id.startsWith("new-")) {
           await tx.orderItem.create({
             data: {
-              orderId,
+              order: { connect: { id: orderId } },
               title: item.title,
               price: item.price,
               quantity: item.quantity,
