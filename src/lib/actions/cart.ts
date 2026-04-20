@@ -10,13 +10,20 @@ const GUEST_CART_COOKIE = "guest_cart_session";
 async function resolveCart() {
   const session = await auth();
   if (session?.user?.id) {
-    let cart = await prisma.cart.findUnique({
-      where: { userId: session.user.id },
+    const userExists = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true }
     });
-    if (!cart) {
-      cart = await prisma.cart.create({ data: { userId: session.user.id } });
+
+    if (userExists) {
+      let cart = await prisma.cart.findUnique({
+        where: { userId: session.user.id },
+      });
+      if (!cart) {
+        cart = await prisma.cart.create({ data: { userId: session.user.id } });
+      }
+      return cart;
     }
-    return cart;
   }
 
   const cookieStore = await cookies();
@@ -42,6 +49,12 @@ async function resolveCart() {
 export async function mergeGuestCartAction() {
   const session = await auth();
   if (!session?.user?.id) return;
+
+  const userExists = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true }
+  });
+  if (!userExists) return;
 
   const cookieStore = await cookies();
   const sessionId = cookieStore.get(GUEST_CART_COOKIE)?.value;
