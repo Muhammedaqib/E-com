@@ -68,7 +68,6 @@ export async function updateInvoiceAction(orderId: number, data: any) {
           await tx.orderItem.create({
             data: {
               orderId,
-              productId: "CUSTOM", // Use a placeholder for custom items
               title: item.title,
               price: item.price,
               quantity: item.quantity
