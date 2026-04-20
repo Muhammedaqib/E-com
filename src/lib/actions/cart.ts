@@ -135,6 +135,7 @@ export async function addToCartAction(productId: string, quantity: number) {
 
   revalidatePath("/cart");
   revalidatePath("/products");
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 
