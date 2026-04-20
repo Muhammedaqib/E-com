@@ -17,8 +17,10 @@ const addressSchema = z.object({
 });
 
 export async function placeOrderAction(formData: FormData) {
+  console.log("placeOrderAction started");
   const session = await auth();
   if (!session?.user?.id) {
+    console.log("No session user id");
     return { error: "Sign in required" };
   }
 
@@ -29,6 +31,7 @@ export async function placeOrderAction(formData: FormData) {
   });
 
   if (!userExists) {
+    console.log("User does not exist in DB:", session.user.id);
     return { error: "User session is invalid. Please sign out and sign in again." };
   }
 
@@ -42,6 +45,7 @@ export async function placeOrderAction(formData: FormData) {
   });
 
   if (!parsed.success) {
+    console.log("Address validation failed:", parsed.error.flatten().fieldErrors);
     return { error: "Please fill in all required address fields correctly." };
   }
 
@@ -49,6 +53,7 @@ export async function placeOrderAction(formData: FormData) {
 
   // Use robust cart resolution
   const cart = await getCartWithItems();
+  console.log("Cart found:", cart?.id, "Items:", cart?.items?.length);
 
   if (!cart || cart.items.length === 0) {
     return { error: "Your cart is empty" };
@@ -56,6 +61,7 @@ export async function placeOrderAction(formData: FormData) {
 
   for (const line of cart.items) {
     if (line.quantity > line.product.stock) {
+      console.log("Insufficient stock for:", line.product.name);
       return {
         error: `Not enough stock for ${line.product.name}. Refresh your cart.`,
       };
@@ -68,6 +74,7 @@ export async function placeOrderAction(formData: FormData) {
   );
 
   try {
+    console.log("Starting transaction...");
     await prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
@@ -77,6 +84,7 @@ export async function placeOrderAction(formData: FormData) {
           address: JSON.stringify(address),
         },
       });
+      console.log("Order created:", order.id);
 
       for (const line of cart.items) {
         await tx.orderItem.create({
@@ -96,12 +104,14 @@ export async function placeOrderAction(formData: FormData) {
 
       // Important: delete the items from the specific cart we found
       await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
+      console.log("Transaction finished successfully");
     });
   } catch (error) {
     console.error("Order placement error:", error);
     return { error: "Could not place order. Please check your details and try again." };
   }
 
+  console.log("Revalidating and redirecting...");
   revalidatePath("/cart");
   revalidatePath("/orders");
   revalidatePath("/", "layout");
