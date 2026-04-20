@@ -73,12 +73,11 @@ export async function updateInvoiceAction(orderId: number, data: any) {
         if (item.id.startsWith("new-")) {
           await tx.orderItem.create({
             data: {
-              order: { connect: { id: orderId } },
+              orderId,
               title: item.title,
               price: item.price,
               quantity: item.quantity,
               hideQuantity: item.hideQuantity,
-              productId: null
             }
           });
         } else {
