@@ -17,12 +17,12 @@ export function ProductCard({ product }: Props) {
       href={`/product/${product.slug}`}
       className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition hover:border-amber-300 hover:shadow-md dark:border-slate-700 dark:bg-slate-900"
     >
-      <div className="relative aspect-[4/5] w-full bg-slate-100 dark:bg-slate-800">
+      <div className="relative aspect-square w-full bg-slate-100 dark:bg-slate-800">
         <Image
           src={first}
           alt={product.name}
           fill
-          className="object-cover transition group-hover:scale-[1.02]"
+          className="object-contain p-2 transition group-hover:scale-[1.02]"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
         />
         {product.featured && (

@@ -13,7 +13,7 @@ export function ProductImageGallery({ images, productName }: { images: string[],
           src={activeImage}
           alt={productName}
           fill
-          className="object-cover"
+          className="object-contain p-4"
           priority
           sizes="(max-width: 1024px) 100vw, 50vw"
         />
@@ -24,11 +24,11 @@ export function ProductImageGallery({ images, productName }: { images: string[],
             <button
               key={src}
               onClick={() => setActiveImage(src)}
-              className={`relative aspect-square overflow-hidden rounded-lg bg-slate-100 transition hover:opacity-80 ${
+              className={`relative aspect-square overflow-hidden rounded-lg bg-slate-100 transition hover:opacity-80 p-1 ${
                 activeImage === src ? "ring-2 ring-amber-500" : ""
               }`}
             >
-              <Image src={src} alt="" fill className="object-cover" sizes="120px" />
+              <Image src={src} alt="" fill className="object-contain" sizes="120px" />
             </button>
           ))}
         </div>
