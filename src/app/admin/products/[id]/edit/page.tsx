@@ -20,7 +20,7 @@ export default async function EditProductPage({ params }: Props) {
   if (!product) notFound();
 
   const categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
-  const imagesJson = JSON.stringify(parseProductImages(product.images), null, 2);
+  const images = parseProductImages(product.images);
 
   return (
     <div>
@@ -121,14 +121,33 @@ export default async function EditProductPage({ params }: Props) {
           </label>
         </div>
         <div>
-          <label className="block text-sm font-medium">Images (JSON array of URLs)</label>
-          <textarea
-            name="imagesJson"
-            required
-            rows={4}
-            defaultValue={imagesJson}
-            className="mt-1 w-full rounded border border-slate-300 px-3 py-2 font-mono text-sm dark:border-slate-600 dark:bg-slate-950"
-          />
+          <label className="block text-sm font-medium">Product Images (up to 4 URLs)</label>
+          <div className="mt-2 space-y-2">
+            <input
+              name="image1"
+              placeholder="Primary image URL"
+              defaultValue={images[0] || ""}
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
+            />
+            <input
+              name="image2"
+              placeholder="Additional image URL (optional)"
+              defaultValue={images[1] || ""}
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
+            />
+            <input
+              name="image3"
+              placeholder="Additional image URL (optional)"
+              defaultValue={images[2] || ""}
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
+            />
+            <input
+              name="image4"
+              placeholder="Additional image URL (optional)"
+              defaultValue={images[3] || ""}
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
+            />
+          </div>
         </div>
         <button
           type="submit"

@@ -26,6 +26,7 @@ model User {
   name      String?
   password  String
   role      Role     @default(USER)
+  isSuspended Boolean  @default(false)
   orders    Order[]
   cart      Cart?
   createdAt DateTime @default(now())

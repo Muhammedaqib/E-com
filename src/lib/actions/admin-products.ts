@@ -26,7 +26,10 @@ const productSchema = z.object({
   stock: z.coerce.number().int().min(0),
   categoryId: z.string().min(1),
   featured: z.coerce.boolean().optional(),
-  imagesJson: z.string().min(2),
+  image1: z.string().url().or(z.literal("")).optional(),
+  image2: z.string().url().or(z.literal("")).optional(),
+  image3: z.string().url().or(z.literal("")).optional(),
+  image4: z.string().url().or(z.literal("")).optional(),
 });
 
 function toCents(n: number) {
@@ -45,18 +48,17 @@ export async function createProductAction(formData: FormData) {
     stock: formData.get("stock"),
     categoryId: formData.get("categoryId"),
     featured: formData.get("featured") === "on",
-    imagesJson: formData.get("imagesJson"),
+    image1: formData.get("image1"),
+    image2: formData.get("image2"),
+    image3: formData.get("image3"),
+    image4: formData.get("image4"),
   });
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
   const p = parsed.data;
-  try {
-    JSON.parse(p.imagesJson);
-  } catch {
-    return { error: { imagesJson: ["Must be valid JSON array of image URLs"] } };
-  }
+  const images = [p.image1, p.image2, p.image3, p.image4].filter(Boolean) as string[];
 
   try {
     await prisma.product.create({
@@ -72,7 +74,7 @@ export async function createProductAction(formData: FormData) {
         stock: p.stock,
         categoryId: p.categoryId,
         featured: p.featured ?? false,
-        images: p.imagesJson,
+        images: JSON.stringify(images),
       },
     });
   } catch {
@@ -97,18 +99,17 @@ export async function updateProductAction(productId: string, formData: FormData)
     stock: formData.get("stock"),
     categoryId: formData.get("categoryId"),
     featured: formData.get("featured") === "on",
-    imagesJson: formData.get("imagesJson"),
+    image1: formData.get("image1"),
+    image2: formData.get("image2"),
+    image3: formData.get("image3"),
+    image4: formData.get("image4"),
   });
   if (!parsed.success) {
     return { error: parsed.error.flatten().fieldErrors };
   }
 
   const p = parsed.data;
-  try {
-    JSON.parse(p.imagesJson);
-  } catch {
-    return { error: { imagesJson: ["Must be valid JSON array of image URLs"] } };
-  }
+  const images = [p.image1, p.image2, p.image3, p.image4].filter(Boolean) as string[];
 
   try {
     await prisma.product.update({
@@ -125,7 +126,7 @@ export async function updateProductAction(productId: string, formData: FormData)
         stock: p.stock,
         categoryId: p.categoryId,
         featured: p.featured ?? false,
-        images: p.imagesJson,
+        images: JSON.stringify(images),
       },
     });
   } catch {

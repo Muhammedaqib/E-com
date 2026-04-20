@@ -19,6 +19,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) return null;
 
+        if (user.isSuspended) {
+          throw new Error("Your account has been suspended. Please contact support.");
+        }
+
         const ok = await compare(password, user.password);
         if (!ok) return null;
 
@@ -35,7 +39,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     jwt({ token, user }) {
       if (user) {
         token.id = user.id!;
-        token.role = user.role as "USER" | "ADMIN";
+        token.role = (user as any).role as "USER" | "ADMIN";
       }
       return token;
     },

@@ -1,9 +1,8 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, FormEvent } from "react";
-import { mergeGuestCartAction } from "@/lib/actions/cart";
+import { useState, FormEvent, useTransition } from "react";
+import { loginAction } from "@/lib/actions/auth";
 
 export function LoginForm() {
   const router = useRouter();
@@ -12,25 +11,27 @@ export function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setLoading(true);
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
+
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("callbackUrl", callbackUrl);
+
+    startTransition(async () => {
+      const res = await loginAction(formData);
+      if (res?.error) {
+        setError(res.error);
+        return;
+      }
+      
+      router.push(callbackUrl);
+      router.refresh();
     });
-    setLoading(false);
-    if (res?.error) {
-      setError("Invalid email or password.");
-      return;
-    }
-    await mergeGuestCartAction();
-    router.push(callbackUrl);
-    router.refresh();
   }
 
   return (
@@ -70,10 +71,10 @@ export function LoginForm() {
       </div>
       <button
         type="submit"
-        disabled={loading}
+        disabled={isPending}
         className="w-full rounded-lg bg-amber-500 py-3 font-semibold text-slate-900 hover:bg-amber-400 disabled:opacity-60"
       >
-        {loading ? "Signing in…" : "Sign in"}
+        {isPending ? "Signing in…" : "Sign in"}
       </button>
     </form>
   );

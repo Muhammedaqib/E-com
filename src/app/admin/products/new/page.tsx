@@ -90,14 +90,29 @@ export default async function NewProductPage() {
           </label>
         </div>
         <div>
-          <label className="block text-sm font-medium">Images (JSON array of URLs)</label>
-          <textarea
-            name="imagesJson"
-            required
-            rows={3}
-            defaultValue={'["https://picsum.photos/seed/new1/800/800"]'}
-            className="mt-1 w-full font-mono text-sm rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-950"
-          />
+          <label className="block text-sm font-medium">Product Images (up to 4 URLs)</label>
+          <div className="mt-2 space-y-2">
+            <input
+              name="image1"
+              placeholder="Primary image URL"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
+            />
+            <input
+              name="image2"
+              placeholder="Additional image URL (optional)"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
+            />
+            <input
+              name="image3"
+              placeholder="Additional image URL (optional)"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
+            />
+            <input
+              name="image4"
+              placeholder="Additional image URL (optional)"
+              className="w-full rounded border border-slate-300 px-3 py-2 text-sm dark:border-slate-600 dark:bg-slate-950"
+            />
+          </div>
         </div>
         <button
           type="submit"
