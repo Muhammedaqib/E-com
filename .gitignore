@@ -20,6 +20,9 @@
 # production
 /build
 
+# sqlite
+/dev.db
+
 # misc
 .DS_Store
 *.pem
@@ -41,6 +44,3 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
-
-*.db
-*.db-journal

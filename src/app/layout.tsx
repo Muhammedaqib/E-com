@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Footer } from "@/components/Footer";
+import { Header } from "@/components/Header";
+import { Providers } from "@/components/Providers";
 import "./globals.css";
-import { ThemeProvider } from "@/components/ThemeProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "TaskFlow - Modern To-Do App",
-  description: "Organize your life with TaskFlow",
+  title: "BazarMart — Shop electronics, fashion & more",
+  description: "Modern marketplace demo — browse products, cart, checkout, and orders.",
 };
 
 export default function RootLayout({
@@ -24,20 +26,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col transition-colors duration-300">
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="light"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`}>
+      <body className="flex min-h-full flex-col bg-slate-50 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+        <Providers>
+          <Header />
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );
