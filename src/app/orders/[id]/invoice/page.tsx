@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { auth } from "@/auth";
 import { formatMoney } from "@/lib/format";
+import { PrintInvoiceButton } from "@/components/PrintInvoiceButton";
 
 export const metadata = { title: "Invoice · BazarMart" };
 
@@ -117,12 +118,7 @@ export default async function UserInvoicePage({ params }: { params: { id: string
         </div>
         
         <div className="mt-10 flex gap-4 print:hidden justify-center">
-          <button
-            onClick={() => window.print()}
-            className="bg-slate-900 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-800 transition dark:bg-white dark:text-slate-900"
-          >
-            Print Invoice
-          </button>
+          <PrintInvoiceButton />
           <Link
             href="/orders"
             className="bg-slate-200 text-slate-700 px-6 py-2 rounded-lg font-bold hover:bg-slate-300 transition dark:bg-slate-700 dark:text-slate-200"
