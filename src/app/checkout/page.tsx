@@ -2,8 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { formatMoney } from "@/lib/format";
-import { submitPlaceOrderAction } from "@/lib/actions/order";
 import { prisma } from "@/lib/prisma";
+import { CheckoutForm } from "@/components/CheckoutForm";
 
 export const metadata = { title: "Checkout · BazarMart" };
 
@@ -43,69 +43,7 @@ export default async function CheckoutPage() {
       </p>
 
       <div className="mt-8 grid gap-8 md:grid-cols-2">
-        <form
-          action={submitPlaceOrderAction}
-          className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900"
-        >
-          <h2 className="font-semibold">Shipping address</h2>
-          <div>
-            <label className="block text-sm font-medium">Full name</label>
-            <input
-              name="fullName"
-              required
-              className="mt-1 w-full rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-950"
-              defaultValue={session?.user?.name ?? ""}
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Address line 1</label>
-            <input
-              name="line1"
-              required
-              className="mt-1 w-full rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-950"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Address line 2</label>
-            <input
-              name="line2"
-              className="mt-1 w-full rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-950"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium">City</label>
-              <input
-                name="city"
-                required
-                className="mt-1 w-full rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-950"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Postal code</label>
-              <input
-                name="postalCode"
-                required
-                className="mt-1 w-full rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-950"
-              />
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium">Phone</label>
-            <input
-              name="phone"
-              required
-              type="tel"
-              className="mt-1 w-full rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-950"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-amber-500 py-3 font-semibold text-slate-900 hover:bg-amber-400"
-          >
-            Place order ({formatMoney(subtotal)})
-          </button>
-        </form>
+        <CheckoutForm subtotal={subtotal} userName={session?.user?.name} />
 
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 dark:border-slate-800 dark:bg-slate-900/50">
           <h2 className="font-semibold">Order summary</h2>

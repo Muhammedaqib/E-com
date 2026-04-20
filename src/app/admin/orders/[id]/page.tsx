@@ -5,8 +5,9 @@ import { OrderStatusSelect } from "@/components/admin/OrderStatusSelect";
 
 export default async function AdminOrderDetailPage({ params }: { params: { id: string } }) {
   const { id } = await params;
+  const numericId = parseInt(id, 10);
   const order = await prisma.order.findUnique({
-    where: { id },
+    where: { id: numericId },
     include: {
       user: true,
       items: {
@@ -24,9 +25,7 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
-          Order #{order.orderNumber}
-        </h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Order #{order.id}</h1>
         <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
       </div>
 

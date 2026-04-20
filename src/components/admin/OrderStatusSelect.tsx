@@ -4,7 +4,7 @@ import { updateOrderStatusAction } from "@/lib/actions/admin-orders";
 import { OrderStatus } from "@/generated/prisma";
 import { useState, useTransition } from "react";
 
-export function OrderStatusSelect({ orderId, currentStatus }: { orderId: string, currentStatus: OrderStatus }) {
+export function OrderStatusSelect({ orderId, currentStatus }: { orderId: number, currentStatus: OrderStatus }) {
   const [isPending, startTransition] = useTransition();
   const [localStatus, setLocalStatus] = useState(currentStatus);
 

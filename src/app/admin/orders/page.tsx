@@ -30,7 +30,7 @@ export default async function AdminOrdersPage() {
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {orders.map((order) => (
               <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-950">
-                <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">#{order.orderNumber || 'N/A'}</td>
+                <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">#{order.id}</td>
                 <td className="px-6 py-4">
                   <p className="font-medium text-slate-900 dark:text-white">{order.user.name}</p>
                   <p className="text-slate-500">{order.user.email}</p>

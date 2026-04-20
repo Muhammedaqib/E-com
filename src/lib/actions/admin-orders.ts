@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { OrderStatus } from "@/generated/prisma";
 
-export async function updateOrderStatusAction(orderId: string, status: OrderStatus) {
+export async function updateOrderStatusAction(orderId: number, status: OrderStatus) {
   const session = await auth();
   if (session?.user?.role !== "ADMIN") {
     return { error: "Unauthorized" };

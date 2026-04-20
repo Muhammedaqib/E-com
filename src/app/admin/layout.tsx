@@ -23,6 +23,9 @@ export default async function AdminLayout({
           <Link href="/admin/products" className="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800">
             Products
           </Link>
+          <Link href="/admin/categories" className="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800">
+            Categories
+          </Link>
           <Link href="/admin/orders" className="rounded px-2 py-1 hover:bg-slate-100 dark:hover:bg-slate-800">
             Orders
           </Link>
