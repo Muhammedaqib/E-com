@@ -25,7 +25,15 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Order #{order.id}</h1>
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Order #{order.id}</h1>
+          <Link
+            href={`/admin/orders/${order.id}/invoice`}
+            className="rounded-lg border border-slate-300 bg-white px-3 py-1 text-sm font-medium hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
+          >
+            Invoice
+          </Link>
+        </div>
         <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
       </div>
 

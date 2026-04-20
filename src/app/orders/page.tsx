@@ -74,9 +74,17 @@ export default async function OrdersPage({
                     {new Date(order.createdAt).toLocaleString()}
                   </div>
                   <div className="font-semibold">{formatMoney(order.total)}</div>
-                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
-                    {order.status}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
+                      {order.status}
+                    </span>
+                    <Link
+                      href={`/orders/${order.id}/invoice`}
+                      className="rounded bg-slate-900 px-3 py-1 text-xs font-bold text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
+                    >
+                      Invoice
+                    </Link>
+                  </div>
                 </div>
                 <ul className="divide-y divide-slate-100 dark:divide-slate-800">
                   {order.items.map((item) => (
