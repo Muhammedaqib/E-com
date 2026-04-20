@@ -22,9 +22,9 @@ const updateInvoiceSchema = z.object({
   items: z.array(z.object({
     id: z.string(),
     title: z.string().min(1),
-    description: z.string().optional().nullable(),
     price: z.number().int().min(0),
     quantity: z.number().int().min(1),
+    hideQuantity: z.boolean().default(false),
   }))
 });
 
@@ -75,10 +75,10 @@ export async function updateInvoiceAction(orderId: number, data: any) {
             data: {
               order: { connect: { id: orderId } },
               title: item.title,
-              description: item.description,
               price: item.price,
               quantity: item.quantity,
-              productId: null // Explicitly set to null for custom items
+              hideQuantity: item.hideQuantity,
+              productId: null
             }
           });
         } else {
@@ -86,9 +86,9 @@ export async function updateInvoiceAction(orderId: number, data: any) {
             where: { id: item.id },
             data: {
               title: item.title,
-              description: item.description,
               price: item.price,
-              quantity: item.quantity
+              quantity: item.quantity,
+              hideQuantity: item.hideQuantity,
             }
           });
         }

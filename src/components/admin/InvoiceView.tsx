@@ -34,10 +34,10 @@ export function InvoiceView({ order }: { order: any }) {
     const newItem = {
       id: `new-${Date.now()}`,
       title: "New Item",
-      description: "",
       price: 0,
       quantity: 1,
-      productId: "CUSTOM"
+      hideQuantity: true,
+      productId: null
     };
     setItems([...items, newItem]);
   };
@@ -142,27 +142,25 @@ export function InvoiceView({ order }: { order: any }) {
               <tr key={item.id} className="text-sm">
                 <td className="py-6">
                   {isEditing ? (
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <input 
                         className="w-full border p-1 font-bold dark:bg-slate-950 dark:border-slate-700" 
                         value={item.title} 
                         onChange={e => handleItemChange(item.id, 'title', e.target.value)} 
-                        placeholder="Item title"
+                        placeholder="Item description"
                       />
-                      <textarea 
-                        className="w-full border p-1 text-xs dark:bg-slate-950 dark:border-slate-700" 
-                        value={item.description || ""} 
-                        onChange={e => handleItemChange(item.id, 'description', e.target.value)} 
-                        placeholder="Detailed description (optional)"
-                        rows={2}
-                      />
+                      <label className="flex items-center gap-2 cursor-pointer text-[10px] text-slate-500 uppercase tracking-widest">
+                        <input 
+                          type="checkbox" 
+                          checked={!item.hideQuantity} 
+                          onChange={e => handleItemChange(item.id, 'hideQuantity', !e.target.checked)} 
+                        />
+                        Show Quantity
+                      </label>
                     </div>
                   ) : (
                     <div>
                       <p className="font-bold text-slate-900 dark:text-white">{item.title}</p>
-                      {item.description && (
-                        <p className="mt-1 text-xs text-slate-500 whitespace-pre-wrap">{item.description}</p>
-                      )}
                     </div>
                   )}
                   <p className="text-[10px] text-slate-400 mt-2 uppercase tracking-tight">ID: {item.productId || 'Manual'}</p>
@@ -181,14 +179,18 @@ export function InvoiceView({ order }: { order: any }) {
                 </td>
                 <td className="py-6 text-center">
                   {isEditing ? (
-                    <input 
-                      type="number" 
-                      className="w-16 border p-1 text-center dark:bg-slate-950 dark:border-slate-700" 
-                      value={isNaN(item.quantity) ? "" : item.quantity} 
-                      onChange={e => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10) || 0)} 
-                    />
+                    !item.hideQuantity ? (
+                      <input 
+                        type="number" 
+                        className="w-16 border p-1 text-center dark:bg-slate-950 dark:border-slate-700" 
+                        value={isNaN(item.quantity) ? "" : item.quantity} 
+                        onChange={e => handleItemChange(item.id, 'quantity', parseInt(e.target.value, 10) || 0)} 
+                      />
+                    ) : (
+                      <div className="text-[10px] text-slate-400 italic">Qty Hidden</div>
+                    )
                   ) : (
-                    item.quantity
+                    !item.hideQuantity ? item.quantity : ""
                   )}
                 </td>
                 <td className="py-6 text-right font-bold text-slate-900 dark:text-white">
