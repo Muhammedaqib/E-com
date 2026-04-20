@@ -5,6 +5,7 @@ import { getCartWithItems } from "@/lib/cart-data";
 import { formatMoney } from "@/lib/format";
 
 export const metadata = { title: "Shopping cart · BazarMart" };
+export const dynamic = "force-dynamic";
 
 export default async function CartPage() {
   const session = await auth();

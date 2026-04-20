@@ -8,17 +8,24 @@ export async function getCartWithItems() {
   const session = await auth();
 
   if (session?.user?.id) {
-    const cart = await prisma.cart.findUnique({
-      where: { userId: session.user.id },
-      include: {
-        items: {
-          include: {
-            product: { include: { category: true } },
+    const userExists = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true }
+    });
+
+    if (userExists) {
+      const cart = await prisma.cart.findUnique({
+        where: { userId: session.user.id },
+        include: {
+          items: {
+            include: {
+              product: { include: { category: true } },
+            },
           },
         },
-      },
-    });
-    return cart;
+      });
+      return cart;
+    }
   }
 
   const cookieStore = await cookies();

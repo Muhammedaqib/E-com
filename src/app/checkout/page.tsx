@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { CheckoutForm } from "@/components/CheckoutForm";
 
 export const metadata = { title: "Checkout · BazarMart" };
+export const dynamic = "force-dynamic";
 
 export default async function CheckoutPage() {
   const session = await auth();
