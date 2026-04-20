@@ -61,8 +61,15 @@ export async function placeOrderAction(formData: FormData) {
 
   try {
     await prisma.$transaction(async (tx) => {
+      const latestOrder = await tx.order.findFirst({
+        orderBy: { orderNumber: "desc" },
+        select: { orderNumber: true },
+      });
+      const nextOrderNumber = (latestOrder?.orderNumber ?? 999) + 1;
+
       const order = await tx.order.create({
         data: {
+          orderNumber: nextOrderNumber,
           userId: session.user.id,
           status: "PAID",
           total,

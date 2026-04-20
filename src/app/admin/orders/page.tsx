@@ -19,7 +19,7 @@ export default async function AdminOrdersPage() {
         <table className="w-full text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-950">
             <tr>
-              <th className="px-6 py-3 font-medium">Order ID</th>
+              <th className="px-6 py-3 font-medium">Order #</th>
               <th className="px-6 py-3 font-medium">Customer</th>
               <th className="px-6 py-3 font-medium">Date</th>
               <th className="px-6 py-3 font-medium">Total</th>
@@ -30,7 +30,7 @@ export default async function AdminOrdersPage() {
           <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
             {orders.map((order) => (
               <tr key={order.id} className="hover:bg-slate-50 dark:hover:bg-slate-950">
-                <td className="px-6 py-4 font-mono text-xs">{order.id}</td>
+                <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">#{order.orderNumber || 'N/A'}</td>
                 <td className="px-6 py-4">
                   <p className="font-medium text-slate-900 dark:text-white">{order.user.name}</p>
                   <p className="text-slate-500">{order.user.email}</p>

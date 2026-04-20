@@ -77,14 +77,15 @@ model CartItem {
 }
 
 model Order {
-  id        String      @id @default(cuid())
-  userId    String
-  user      User        @relation(fields: [userId], references: [id])
-  status    OrderStatus @default(PAID)
-  total     Int
-  address   String      @default("{}")
-  items     OrderItem[]
-  createdAt DateTime    @default(now())
+  id          String      @id @default(cuid())
+  orderNumber Int         @unique
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  status      OrderStatus @default(PAID)
+  total       Int
+  address     String      @default("{}")
+  items       OrderItem[]
+  createdAt   DateTime    @default(now())
 }
 
 model OrderItem {

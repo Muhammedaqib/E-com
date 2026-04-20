@@ -68,7 +68,7 @@ export default async function OrdersPage({
                 <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 bg-slate-50 px-4 py-3 dark:border-slate-800 dark:bg-slate-800/50">
                   <div>
                     <span className="text-sm text-slate-500">Order</span>{" "}
-                    <span className="font-mono text-sm font-medium">{order.id.slice(0, 12)}…</span>
+                    <span className="font-mono text-sm font-medium">#{order.orderNumber}</span>
                   </div>
                   <div className="text-sm text-slate-600 dark:text-slate-400">
                     {new Date(order.createdAt).toLocaleString()}

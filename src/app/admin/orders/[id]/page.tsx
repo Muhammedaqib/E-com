@@ -24,7 +24,9 @@ export default async function AdminOrderDetailPage({ params }: { params: { id: s
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Order Details</h1>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+          Order #{order.orderNumber}
+        </h1>
         <OrderStatusSelect orderId={order.id} currentStatus={order.status} />
       </div>
 
