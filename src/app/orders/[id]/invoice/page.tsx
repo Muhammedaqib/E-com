@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/auth";
 import { formatMoney } from "@/lib/format";
 
@@ -117,7 +118,7 @@ export default async function UserInvoicePage({ params }: { params: { id: string
         
         <div className="mt-10 flex gap-4 print:hidden justify-center">
           <button
-            onClick="window.print()"
+            onClick={() => window.print()}
             className="bg-slate-900 text-white px-6 py-2 rounded-lg font-bold hover:bg-slate-800 transition dark:bg-white dark:text-slate-900"
           >
             Print Invoice
