@@ -7,7 +7,7 @@ export function ProductImageGallery({ images, productName }: { images: string[],
   const [activeImage, setActiveImage] = useState(images[0] || "https://picsum.photos/seed/detail/800/800");
 
   return (
-    <div className="space-y-4">
+    <div className="mx-auto w-full max-w-md space-y-4">
       <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
         <Image
           src={activeImage}
