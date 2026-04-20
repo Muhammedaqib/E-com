@@ -5,6 +5,7 @@ import { AddToCartButton } from "@/components/AddToCartButton";
 import { formatMoney } from "@/lib/format";
 import { parseProductImages } from "@/lib/product-utils";
 import { prisma } from "@/lib/prisma";
+import { ProductImageGallery } from "@/components/ProductImageGallery";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,31 +28,10 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!product) notFound();
 
   const images = parseProductImages(product.images);
-  const main = images[0] ?? "https://picsum.photos/seed/detail/800/800";
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
-      <div className="space-y-4">
-        <div className="relative aspect-square overflow-hidden rounded-2xl bg-slate-100 dark:bg-slate-800">
-          <Image
-            src={main}
-            alt={product.name}
-            fill
-            className="object-cover"
-            priority
-            sizes="(max-width: 1024px) 100vw, 50vw"
-          />
-        </div>
-        {images.length > 1 && (
-          <div className="grid grid-cols-4 gap-2">
-            {images.slice(1, 5).map((src) => (
-              <div key={src} className="relative aspect-square overflow-hidden rounded-lg bg-slate-100">
-                <Image src={src} alt="" fill className="object-cover" sizes="120px" />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <ProductImageGallery images={images} productName={product.name} />
 
       <div>
         {product.category && (
