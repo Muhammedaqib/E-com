@@ -30,6 +30,25 @@ export function InvoiceView({ order }: { order: any }) {
     ));
   };
 
+  const handleAddItem = () => {
+    const newItem = {
+      id: `new-${Date.now()}`,
+      title: "New Item",
+      price: 0,
+      quantity: 1,
+      productId: "CUSTOM"
+    };
+    setItems([...items, newItem]);
+  };
+
+  const handleRemoveItem = (id: string) => {
+    if (items.length <= 1) {
+      alert("Invoice must have at least one item.");
+      return;
+    }
+    setItems(items.filter((i: any) => i.id !== id));
+  };
+
   const total = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
 
   return (
@@ -114,6 +133,7 @@ export function InvoiceView({ order }: { order: any }) {
               <th className="py-4 text-center">Price</th>
               <th className="py-4 text-center">Qty</th>
               <th className="py-4 text-right">Total</th>
+              {isEditing && <th className="py-4 text-right print:hidden">Action</th>}
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -158,10 +178,30 @@ export function InvoiceView({ order }: { order: any }) {
                 <td className="py-6 text-right font-bold text-slate-900 dark:text-white">
                   {formatMoney(item.price * item.quantity)}
                 </td>
+                {isEditing && (
+                  <td className="py-6 text-right print:hidden">
+                    <button 
+                      onClick={() => handleRemoveItem(item.id)}
+                      className="text-red-500 hover:text-red-700 font-bold"
+                    >
+                      ✕
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
+        {isEditing && (
+          <div className="mt-4 print:hidden">
+            <button
+              onClick={handleAddItem}
+              className="text-xs font-bold uppercase tracking-widest bg-slate-100 px-3 py-1 rounded hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700"
+            >
+              + Add Item
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="mt-10 pt-10 border-t-2 border-slate-900 dark:border-white">
