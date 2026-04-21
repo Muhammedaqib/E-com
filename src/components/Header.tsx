@@ -34,11 +34,16 @@ export async function Header() {
           <span className="hidden items-center gap-2 text-slate-400 lg:flex">
             {session?.user ? (
               <>
-                <Link href="/profile" className="hover:text-amber-400">
-                  Hello,{" "}
-                  <span className="font-medium text-white">
-                    {session.user.name ?? session.user.email?.split("@")[0]}
-                  </span>
+                <Link href="/profile" className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-slate-200 group-hover:bg-amber-500 group-hover:text-slate-900 shadow-inner">
+                    <UserIcon />
+                  </div>
+                  <div className="flex flex-col items-start leading-none">
+                    <span className="text-[10px] text-slate-500">My Account</span>
+                    <span className="font-bold text-white">
+                      {session.user.name ?? session.user.email?.split("@")[0]}
+                    </span>
+                  </div>
                 </Link>
                 <SignOutButton />
               </>
@@ -97,5 +102,24 @@ function CartIcon() {
     <span className="inline-flex text-lg" aria-hidden>
       🛒
     </span>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="16" 
+      height="16" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
   );
 }
