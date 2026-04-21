@@ -32,6 +32,9 @@ export default async function ProfileLayout({
           <Link href="/profile/appearance" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
             Appearance
           </Link>
+          <Link href="/profile/support" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
+            Messages
+          </Link>
           <div className="my-4 border-t border-slate-100 dark:border-slate-800" />
           <Link href="/" className="rounded px-3 py-2 font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
             ← Storefront

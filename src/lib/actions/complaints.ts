@@ -18,18 +18,28 @@ export async function submitComplaintAction(formData: FormData) {
   if (!message || message.length < 10) return { error: "Message must be at least 10 characters." };
 
   try {
-    await prisma.complaint.create({
-      data: {
-        userId: session.user.id,
-        subject,
-        message,
-        status: "PENDING"
-      }
+    await prisma.$transaction(async (tx) => {
+      const complaint = await tx.complaint.create({
+        data: {
+          userId: session.user.id,
+          subject,
+          status: "PENDING"
+        }
+      });
+
+      await tx.complaintMessage.create({
+        data: {
+          complaintId: complaint.id,
+          senderId: session.user.id,
+          content: message.trim()
+        }
+      });
     });
 
     revalidatePath("/admin/complaints");
     return { success: true };
   } catch (err) {
+    console.error("Complaint submission error:", err);
     return { error: "Failed to submit report." };
   }
 }

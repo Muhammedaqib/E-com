@@ -13,24 +13,37 @@ async function requireAdmin() {
 }
 
 export async function replyToComplaintAction(complaintId: string, formData: FormData) {
-  await requireAdmin();
+  const session = await auth();
+  if (session?.user?.role !== "ADMIN") {
+    return { error: "Unauthorized" };
+  }
 
   const reply = formData.get("reply") as string;
-  if (!reply || reply.length < 5) {
+  if (!reply || reply.trim().length < 5) {
     return { error: "Reply must be at least 5 characters long." };
   }
 
   try {
-    await prisma.complaint.update({
-      where: { id: complaintId },
-      data: {
-        reply,
-        status: "RESOLVED"
-      }
+    await prisma.$transaction(async (tx) => {
+      await tx.complaintMessage.create({
+        data: {
+          complaintId,
+          senderId: session.user.id,
+          content: reply.trim()
+        }
+      });
+
+      await tx.complaint.update({
+        where: { id: complaintId },
+        data: {
+          status: "RESOLVED"
+        }
+      });
     });
 
     revalidatePath("/admin/complaints");
     revalidatePath(`/admin/complaints/${complaintId}`);
+    revalidatePath("/profile/support");
     return { success: true };
   } catch (err) {
     return { error: "Failed to send reply." };
