@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Product } from "@/generated/prisma";
+import type { Product } from "@prisma/client";
 import { formatMoney } from "@/lib/format";
 import { parseProductImages } from "@/lib/product-utils";
 

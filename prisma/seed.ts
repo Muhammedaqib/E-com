@@ -1,7 +1,7 @@
 import { hash } from "bcryptjs";
 import path from "node:path";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "../src/generated/prisma";
+import { PrismaClient } from "@prisma/client";
 
 const databasePath = path.join(process.cwd(), "dev.db");
 const adapter = new PrismaBetterSqlite3({ url: databasePath });

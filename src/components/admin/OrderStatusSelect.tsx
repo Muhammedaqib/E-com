@@ -1,7 +1,7 @@
 "use client";
 
 import { updateOrderStatusAction } from "@/lib/actions/admin-orders";
-import { OrderStatus } from "@/generated/prisma";
+import { OrderStatus } from "@prisma/client";
 import { useState, useTransition } from "react";
 
 export function OrderStatusSelect({ orderId, currentStatus }: { orderId: number, currentStatus: OrderStatus }) {

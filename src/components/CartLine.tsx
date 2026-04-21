@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTransition } from "react";
 import { removeCartItemAction, updateCartItemAction } from "@/lib/actions/cart";
 import { formatMoney } from "@/lib/format";
-import type { CartItem, Product } from "@/generated/prisma";
+import type { CartItem, Product } from "@prisma/client";
 import { parseProductImages } from "@/lib/product-utils";
 
 type Line = CartItem & { product: Product & { slug: string } };
