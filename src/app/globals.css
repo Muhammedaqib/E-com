@@ -5,6 +5,43 @@
   --font-mono: var(--font-geist-mono);
 }
 
-body {
-  @apply text-slate-900 dark:text-slate-100;
+/* Enable class-based dark mode for Tailwind 4 */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased transition-colors duration-300;
+  }
+  
+  .dark body {
+    @apply bg-slate-950 text-slate-100;
+  }
+}
+
+/* Explicit Dark Mode Overrides for UI components */
+.dark .bg-white {
+  background-color: #0f172a !important; /* slate-900 */
+  border-color: #1e293b !important; /* slate-800 */
+}
+
+.dark .bg-slate-50 {
+  background-color: rgba(15, 23, 42, 0.5) !important; 
+}
+
+.dark .text-slate-900 {
+  color: #f8fafc !important; /* slate-50 */
+}
+
+.dark .text-slate-500 {
+  color: #94a3b8 !important; /* slate-400 */
+}
+
+.dark input, .dark textarea, .dark select {
+  background-color: #020617 !important; /* slate-950 */
+  border-color: #334155 !important; /* slate-700 */
+  color: #ffffff !important;
+}
+
+.dark .border-slate-200 {
+  border-color: #1e293b !important; /* slate-800 */
 }

@@ -17,33 +17,33 @@ export function ThemeToggle() {
     <div className="flex items-center gap-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 w-fit">
       <button
         onClick={() => setTheme("light")}
-        className={`px-4 py-2 rounded-lg text-sm font-bold transition ${
+        className={`px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 ${
           theme === "light" 
             ? "bg-white text-slate-900 shadow-sm" 
-            : "text-slate-500 hover:text-slate-700"
+            : "text-slate-500 hover:text-slate-900 dark:hover:text-slate-200"
         }`}
       >
-        ☀️ Light
+        <span>☀️</span> Light
       </button>
       <button
         onClick={() => setTheme("dark")}
-        className={`px-4 py-2 rounded-lg text-sm font-bold transition ${
+        className={`px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 ${
           theme === "dark" 
-            ? "bg-slate-950 text-white shadow-sm" 
-            : "text-slate-400 hover:text-slate-200"
+            ? "bg-slate-900 text-amber-400 shadow-sm border border-slate-700" 
+            : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
         }`}
       >
-        🌙 Dark
+        <span>🌙</span> Dark
       </button>
       <button
         onClick={() => setTheme("system")}
-        className={`px-4 py-2 rounded-lg text-sm font-bold transition ${
+        className={`px-4 py-2 rounded-lg text-sm font-bold transition flex items-center gap-1 ${
           theme === "system" 
             ? "bg-slate-500 text-white shadow-sm" 
-            : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+            : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200"
         }`}
       >
-        💻 System
+        <span>💻</span> System
       </button>
     </div>
   );

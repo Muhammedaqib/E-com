@@ -47,7 +47,17 @@ export async function updateProfileAction(formData: FormData) {
     return { error: "Incorrect current password" };
   }
 
-  const updateData: any = { name, email, phone, address };
+  const updateData: any = { name, phone, address };
+  
+  // Only update email if it's different to avoid potential conflict issues
+  if (email !== user.email) {
+    // Optional: check if new email is already taken by ANOTHER user
+    const emailTaken = await prisma.user.findUnique({ where: { email } });
+    if (emailTaken) {
+      return { error: "Email is already in use by another account" };
+    }
+    updateData.email = email;
+  }
 
   if (newPassword && newPassword.length >= 6) {
     updateData.password = await hash(newPassword, 12);
@@ -61,7 +71,8 @@ export async function updateProfileAction(formData: FormData) {
 
     revalidatePath("/profile");
     return { success: true };
-  } catch (err) {
-    return { error: "Email might already be in use" };
+  } catch (err: any) {
+    console.error("Profile update error:", err);
+    return { error: "Failed to update profile. Please try again." };
   }
 }
