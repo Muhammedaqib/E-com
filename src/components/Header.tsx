@@ -34,12 +34,12 @@ export async function Header() {
           <span className="hidden items-center gap-2 text-slate-400 lg:flex">
             {session?.user ? (
               <>
-                <span>
+                <Link href="/profile" className="hover:text-amber-400">
                   Hello,{" "}
                   <span className="font-medium text-white">
                     {session.user.name ?? session.user.email?.split("@")[0]}
                   </span>
-                </span>
+                </Link>
                 <SignOutButton />
               </>
             ) : (
