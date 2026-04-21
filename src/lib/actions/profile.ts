@@ -9,8 +9,8 @@ import { z } from "zod";
 const profileSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
-  phone: z.string().optional(),
-  address: z.string().optional(),
+  phone: z.string().optional().nullable(),
+  address: z.string().optional().nullable(),
   newPassword: z.string().min(6).optional().or(z.literal("")),
   currentPassword: z.string().min(1),
 });
@@ -31,54 +31,51 @@ export async function updateProfileAction(formData: FormData) {
   });
 
   if (!parsed.success) {
-    return { error: "Please fill in all fields correctly. Password must be at least 6 characters." };
+    return { error: "Invalid data provided. Please check your entries." };
   }
 
-  const { name, email: rawEmail, phone, address, newPassword, currentPassword } = parsed.data;
-  const email = rawEmail.toLowerCase().trim();
+  const { name, email, phone, address, newPassword, currentPassword } = parsed.data;
 
+  // 1. Find user in DB
   const user = await prisma.user.findUnique({
     where: { id: session.user.id }
   });
 
   if (!user) return { error: "User not found" };
 
+  // 2. Verify current password
   const passwordMatch = await compare(currentPassword, user.password);
   if (!passwordMatch) {
     return { error: "Incorrect current password" };
   }
 
-  const updateData: {
-    name?: string;
-    email?: string;
-    phone?: string | null;
-    address?: string | null;
-    password?: string;
-  } = {};
+  // 3. Prepare data for update
+  const updateData: any = {};
   
-  if (name.trim()) updateData.name = name.trim();
-  
-  // Handle phone and address with explicit nulls if empty
+  updateData.name = name.trim();
   updateData.phone = phone?.trim() || null;
   updateData.address = address?.trim() || null;
   
-  // Only update email if it's actually different
-  if (email !== user.email.toLowerCase().trim()) {
-    const emailTaken = await prisma.user.findUnique({ where: { email } });
-    if (emailTaken) {
-      return { error: "Email is already in use by another account" };
+  // Only update email if it's different
+  if (email.toLowerCase().trim() !== user.email.toLowerCase().trim()) {
+    const existing = await prisma.user.findUnique({ 
+      where: { email: email.toLowerCase().trim() } 
+    });
+    if (existing) {
+      return { error: "Email is already taken by another account" };
     }
-    updateData.email = email;
+    updateData.email = email.toLowerCase().trim();
   }
 
   if (newPassword && newPassword.length >= 6) {
     updateData.password = await hash(newPassword, 12);
   }
 
+  // 4. Execute update
   try {
-    console.log("Saving profile for user:", session.user.id, "Data:", JSON.stringify(updateData));
+    console.log("Saving user profile for ID:", user.id);
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: updateData
     });
 
@@ -86,7 +83,7 @@ export async function updateProfileAction(formData: FormData) {
     revalidatePath("/", "layout");
     return { success: true };
   } catch (err: any) {
-    console.error("Profile update error detail:", err);
-    return { error: `Database error: ${err.message || "Failed to update profile"}` };
+    console.error("Database update error:", err);
+    return { error: "Failed to update profile in database. Error: " + err.message };
   }
 }
