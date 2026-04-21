@@ -48,10 +48,19 @@ export async function updateProfileAction(formData: FormData) {
     return { error: "Incorrect current password" };
   }
 
-  const updateData: any = {};
+  const updateData: {
+    name?: string;
+    email?: string;
+    phone?: string | null;
+    address?: string | null;
+    password?: string;
+  } = {};
+  
   if (name.trim()) updateData.name = name.trim();
-  if (phone !== undefined) updateData.phone = phone.trim() || null;
-  if (address !== undefined) updateData.address = address.trim() || null;
+  
+  // Handle phone and address with explicit nulls if empty
+  updateData.phone = phone?.trim() || null;
+  updateData.address = address?.trim() || null;
   
   // Only update email if it's actually different
   if (email !== user.email.toLowerCase().trim()) {
@@ -67,7 +76,7 @@ export async function updateProfileAction(formData: FormData) {
   }
 
   try {
-    console.log("Updating user profile:", session.user.id, updateData);
+    console.log("Saving profile for user:", session.user.id, "Data:", JSON.stringify(updateData));
     await prisma.user.update({
       where: { id: session.user.id },
       data: updateData
