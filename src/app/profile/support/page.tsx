@@ -11,16 +11,25 @@ export default async function SupportPage() {
     redirect("/login?callbackUrl=/profile/support");
   }
 
+  // Fetch complaints and messages separately to bypass potential 'include' sync issues
   const complaints = await prisma.complaint.findMany({
     where: { userId: session.user.id },
     orderBy: { updatedAt: "desc" },
-    include: {
-      messages: {
-        orderBy: { createdAt: "desc" },
-        take: 1,
-      }
-    }
   });
+
+  const complaintsWithLastMessage = await Promise.all(complaints.map(async (c) => {
+    // Try to catch error if messages table doesn't exist yet for some reason
+    let lastMessage = null;
+    try {
+      lastMessage = await prisma.complaintMessage.findFirst({
+        where: { complaintId: c.id },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch (e) {
+      console.error(`Error fetching messages for complaint ${c.id}:`, e);
+    }
+    return { ...c, lastMessage };
+  }));
 
   return (
     <div className="space-y-8 pb-10">
@@ -35,8 +44,8 @@ export default async function SupportPage() {
       </div>
 
       <div className="grid gap-4">
-        {complaints.length > 0 ? (
-          complaints.map((c) => (
+        {complaintsWithLastMessage.length > 0 ? (
+          complaintsWithLastMessage.map((c) => (
             <Link 
               key={c.id} 
               href={`/profile/support/${c.id}`}
@@ -53,7 +62,7 @@ export default async function SupportPage() {
                 </span>
               </div>
               <p className="text-sm text-slate-500 line-clamp-1 mb-4">
-                {c.messages[0]?.content || "No messages yet."}
+                {c.lastMessage?.content || "Click to open conversation."}
               </p>
               <div className="flex justify-between items-center text-[10px] text-slate-400 uppercase tracking-widest">
                 <span>Last updated: {new Date(c.updatedAt).toLocaleDateString()}</span>
