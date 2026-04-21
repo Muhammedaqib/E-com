@@ -34,7 +34,15 @@ export default async function OrdersPage({
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your orders</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Your orders</h1>
+        <Link 
+          href="/orders/report"
+          className="text-sm font-semibold text-amber-700 hover:underline dark:text-amber-500"
+        >
+          Report an issue
+        </Link>
+      </div>
       {sp.placed === "1" && (
         <p className="mt-2 rounded-lg bg-green-50 p-3 text-green-800 dark:bg-green-950/50 dark:text-green-200">
           Thank you! Your order was placed successfully.

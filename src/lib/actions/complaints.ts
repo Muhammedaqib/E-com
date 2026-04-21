@@ -1,0 +1,35 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { auth } from "@/auth";
+import { prisma } from "@/lib/prisma";
+
+export async function submitComplaintAction(formData: FormData) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Please sign in to submit a report." };
+  }
+
+  const subject = formData.get("subject") as string;
+  const message = formData.get("message") as string;
+
+  if (!subject || subject.length < 3) return { error: "Subject is too short." };
+  if (!message || message.length < 10) return { error: "Message must be at least 10 characters." };
+
+  try {
+    await prisma.complaint.create({
+      data: {
+        userId: session.user.id,
+        subject,
+        message,
+        status: "PENDING"
+      }
+    });
+
+    revalidatePath("/admin/complaints");
+    return { success: true };
+  } catch (err) {
+    return { error: "Failed to submit report." };
+  }
+}

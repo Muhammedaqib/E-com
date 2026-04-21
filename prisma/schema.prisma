@@ -8,15 +8,33 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
+  id          String      @id @default(cuid())
+  email       String      @unique
   name        String?
   password    String
-  role        Role     @default(USER)
-  isSuspended Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  role        Role        @default(USER)
+  isSuspended Boolean     @default(false)
+  createdAt   DateTime    @default(now())
   cart        Cart?
   orders      Order[]
+  complaints  Complaint[]
+}
+
+model Complaint {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject   String
+  message   String
+  reply     String?
+  status    ComplaintStatus @default(PENDING)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+enum ComplaintStatus {
+  PENDING
+  RESOLVED
 }
 
 model Category {

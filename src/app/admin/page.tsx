@@ -4,10 +4,11 @@ import { prisma } from "@/lib/prisma";
 export const metadata = { title: "Admin · BazarMart" };
 
 export default async function AdminHomePage() {
-  const [products, orders, users] = await Promise.all([
+  const [products, orders, users, complaints] = await Promise.all([
     prisma.product.count(),
     prisma.order.count(),
     prisma.user.count(),
+    prisma.complaint.count({ where: { status: "PENDING" } }),
   ]);
 
   return (
@@ -28,6 +29,10 @@ export default async function AdminHomePage() {
         <Link href="/admin/users" className="rounded-xl border border-slate-200 bg-white p-6 hover:border-amber-500 dark:border-slate-800 dark:bg-slate-900">
           <p className="text-sm text-slate-500">Users</p>
           <p className="mt-1 text-3xl font-bold">{users}</p>
+        </Link>
+        <Link href="/admin/complaints" className="rounded-xl border border-slate-200 bg-white p-6 hover:border-amber-500 dark:border-slate-800 dark:bg-slate-900">
+          <p className="text-sm text-slate-500">Pending Complaints</p>
+          <p className="mt-1 text-3xl font-bold text-amber-600">{complaints}</p>
         </Link>
       </div>
       <Link
