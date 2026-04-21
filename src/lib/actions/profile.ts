@@ -34,7 +34,8 @@ export async function updateProfileAction(formData: FormData) {
     return { error: "Please fill in all fields correctly. Password must be at least 6 characters." };
   }
 
-  const { name, email, phone, address, newPassword, currentPassword } = parsed.data;
+  const { name, email: rawEmail, phone, address, newPassword, currentPassword } = parsed.data;
+  const email = rawEmail.toLowerCase().trim();
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id }
@@ -47,11 +48,13 @@ export async function updateProfileAction(formData: FormData) {
     return { error: "Incorrect current password" };
   }
 
-  const updateData: any = { name, phone, address };
+  const updateData: any = {};
+  if (name.trim()) updateData.name = name.trim();
+  if (phone !== undefined) updateData.phone = phone.trim() || null;
+  if (address !== undefined) updateData.address = address.trim() || null;
   
-  // Only update email if it's different to avoid potential conflict issues
-  if (email !== user.email) {
-    // Optional: check if new email is already taken by ANOTHER user
+  // Only update email if it's actually different
+  if (email !== user.email.toLowerCase().trim()) {
     const emailTaken = await prisma.user.findUnique({ where: { email } });
     if (emailTaken) {
       return { error: "Email is already in use by another account" };
@@ -64,15 +67,17 @@ export async function updateProfileAction(formData: FormData) {
   }
 
   try {
+    console.log("Updating user profile:", session.user.id, updateData);
     await prisma.user.update({
       where: { id: session.user.id },
       data: updateData
     });
 
     revalidatePath("/profile");
+    revalidatePath("/", "layout");
     return { success: true };
   } catch (err: any) {
-    console.error("Profile update error:", err);
-    return { error: "Failed to update profile. Please try again." };
+    console.error("Profile update error detail:", err);
+    return { error: `Database error: ${err.message || "Failed to update profile"}` };
   }
 }
