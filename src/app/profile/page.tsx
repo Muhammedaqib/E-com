@@ -38,16 +38,8 @@ export default async function ProfilePage() {
           <ProfileForm user={user} />
         </section>
 
-        {/* Appearance */}
-        <section className="bg-white p-6 rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 shadow-sm">
-          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
-            🎨 Appearance
-          </h2>
-          <ThemeToggle />
-        </section>
-
         {/* Invoice Messages */}
-        <section className="bg-white p-6 rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 shadow-sm">
+        <section id="invoices" className="bg-white p-6 rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 shadow-sm">
           <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
             📄 Recent Invoices
           </h2>
@@ -72,6 +64,14 @@ export default async function ProfilePage() {
               <p className="py-4 text-slate-500 text-sm italic">No recent invoices.</p>
             )}
           </div>
+        </section>
+
+        {/* Appearance */}
+        <section className="bg-white p-6 rounded-xl border border-slate-200 dark:bg-slate-900 dark:border-slate-800 shadow-sm">
+          <h2 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-4 flex items-center gap-2">
+            🎨 Appearance
+          </h2>
+          <ThemeToggle />
         </section>
       </div>
     </div>
