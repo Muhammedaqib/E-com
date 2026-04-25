@@ -23,6 +23,9 @@ function getPrismaClient() {
     if (!connectionString.includes("statement_cache_size=")) {
       connectionString += `&statement_cache_size=0`;
     }
+    if (!connectionString.includes("connect_timeout=")) {
+      connectionString += `&connect_timeout=30`;
+    }
   }
 
   const client = new PrismaClient({

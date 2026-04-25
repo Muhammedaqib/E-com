@@ -43,15 +43,19 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = user.role as Role;
       }
       
-      // If session is being updated or on regular check, fetch latest role from DB
-      // This ensures role changes take effect without signing out
-      if (trigger === "update" || !token.role) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { role: true }
-        });
-        if (dbUser) {
-          token.role = dbUser.role;
+      // Only fetch from DB if specifically triggered or if role is missing
+      // This prevents constant DB pressure on every session check
+      if (trigger === "update") {
+        try {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true }
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+          }
+        } catch (e) {
+          console.error("Auth: Role update fetch failed", e);
         }
       }
       
