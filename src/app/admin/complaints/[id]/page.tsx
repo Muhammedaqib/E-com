@@ -82,11 +82,13 @@ export default async function AdminComplaintDetailPage({ params }: { params: { i
 
         {/* Chat Column */}
         <div className="lg:col-span-2">
-          <ChatBox 
-            complaintId={complaint.id} 
-            messages={complaint.messages} 
-            currentUserId={session.user.id} 
-          />
+          {session?.user?.id && (
+            <ChatBox 
+              complaintId={complaint.id} 
+              messages={complaint.messages} 
+              currentUserId={session.user.id} 
+            />
+          )}
         </div>
       </div>
     </div>

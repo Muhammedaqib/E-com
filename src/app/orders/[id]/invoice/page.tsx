@@ -53,7 +53,7 @@ export default async function UserInvoicePage({ params }: { params: { id: string
               {address.line2 && <p>{address.line2}</p>}
               <p>{address.city}, {address.postalCode}</p>
               <p className="mt-2 text-sm">{address.phone}</p>
-              <p className="mt-1 text-sm">{session.user.email}</p>
+              <p className="mt-1 text-sm">{session.user.email!}</p>
             </div>
           </div>
           <div className="text-right">

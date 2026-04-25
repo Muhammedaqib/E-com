@@ -53,7 +53,7 @@ export default async function UserChatPage({ params }: { params: { id: string } 
       <ChatBox 
         complaintId={complaint.id} 
         messages={complaint.messages} 
-        currentUserId={session.user.id} 
+        currentUserId={session.user.id!} 
       />
     </div>
   );
