@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { ProductCard } from "@/components/ProductCard";
 import { prisma } from "@/lib/prisma";
+import type { Product, Category, SiteSettings } from "@prisma/client";
 
 export default async function HomePage() {
-  let featured = [];
-  let categories = [];
-  let settings = null;
+  let featured: (Product & { category: Category })[] = [];
+  let categories: Category[] = [];
+  let settings: SiteSettings | null = null;
 
   try {
     const [f, c, s] = await Promise.all([
@@ -14,7 +15,7 @@ export default async function HomePage() {
         take: 8,
         orderBy: { createdAt: "desc" },
         include: { category: true },
-      }),
+      }) as Promise<(Product & { category: Category })[]>,
       prisma.category.findMany({ orderBy: { name: "asc" } }),
       prisma.siteSettings.findUnique({ where: { id: "default" } }),
     ]);
@@ -59,37 +60,56 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {s.showCategories && (
+      {s.showCategories && categories.length > 0 && (
         <section>
-          <h2 className="mb-4 text-xl font-bold text-slate-900 dark:text-white">{s.categoriesTitle}</h2>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {categories.map((c) => (
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+            {s.categoriesTitle}
+          </h2>
+          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+            {categories.map((category) => (
               <Link
-                key={c.id}
-                href={`/products?category=${c.slug}`}
-                className="rounded-xl border border-slate-200 bg-white px-4 py-6 text-center font-medium shadow-sm transition hover:border-amber-400 hover:shadow dark:border-slate-700 dark:bg-slate-900 dark:hover:border-amber-500"
+                key={category.id}
+                href={`/products?category=${category.slug}`}
+                className="group relative flex flex-col items-center justify-center rounded-xl border border-slate-200 bg-white p-6 text-center transition-all hover:border-amber-500 hover:shadow-md dark:border-slate-800 dark:bg-slate-900"
               >
-                {c.name}
+                <span className="text-sm font-bold text-slate-900 group-hover:text-amber-600 dark:text-white uppercase tracking-tight">
+                  {category.name}
+                </span>
               </Link>
             ))}
           </div>
         </section>
       )}
 
-      {s.showFeatured && (
+      {s.showFeatured && featured.length > 0 && (
         <section>
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{s.featuredTitle}</h2>
-            <Link href="/products" className="text-sm font-medium text-amber-700 hover:underline dark:text-amber-400">
-              See all
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              {s.featuredTitle}
+            </h2>
+            <Link
+              href="/products"
+              className="text-sm font-semibold text-amber-600 hover:text-amber-500"
+            >
+              View all products &rarr;
             </Link>
           </div>
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">
             {featured.map((product) => (
               <ProductCard key={product.id} product={product} />
             ))}
           </div>
         </section>
+      )}
+
+      {!s.showFeatured && !s.showCategories && (
+        <div className="flex flex-col items-center justify-center py-20 text-center">
+          <h2 className="text-xl font-medium text-slate-400">Welcome to BazarMart</h2>
+          <p className="mt-2 text-slate-500">Check out our full collection of products below.</p>
+          <Link href="/products" className="mt-6 text-amber-600 font-bold hover:underline">
+            Browse Products &rarr;
+          </Link>
+        </div>
       )}
     </div>
   );

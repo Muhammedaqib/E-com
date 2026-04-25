@@ -5,12 +5,13 @@ import { getCartItemCount } from "@/lib/cart-data";
 import { prisma } from "@/lib/prisma";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { SignOutButton } from "@/components/SignOutButton";
+import type { Category } from "@prisma/client";
 
 export async function Header() {
   const session = await auth();
   const cartCount = await getCartItemCount();
   
-  let categories = [];
+  let categories: Category[] = [];
   try {
     categories = await prisma.category.findMany({
       orderBy: { name: "asc" },
