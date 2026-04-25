@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Providers } from "@/components/Providers";
+import { BackButton } from "@/components/BackButton";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,10 +28,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full`} suppressHydrationWarning>
-      <body className="flex min-h-full flex-col">
+      <body className="flex min-h-full flex-col" suppressHydrationWarning>
         <Providers>
           <Header />
-          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">{children}</main>
+          <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-8">
+            <BackButton />
+            {children}
+          </main>
           <Footer />
         </Providers>
       </body>

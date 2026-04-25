@@ -1,16 +1,23 @@
-import path from "node:path";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
-
-const databasePath = path.join(process.cwd(), "dev.db");
-
-const adapter = new PrismaBetterSqlite3({ url: databasePath });
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
 
-export const prisma =
-  globalForPrisma.prisma ?? new PrismaClient({ adapter });
+/**
+ * Standard Prisma initialization for Next.js.
+ * This works across development and production environments.
+ */
+function getPrismaClient() {
+  if (globalForPrisma.prisma) {
+    return globalForPrisma.prisma;
+  }
 
-console.log("Prisma Client initialized (Version 2)");
+  const client = new PrismaClient();
+  
+  if (process.env.NODE_ENV !== "production") {
+    globalForPrisma.prisma = client;
+  }
+  
+  return client;
+}
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+export const prisma = getPrismaClient();

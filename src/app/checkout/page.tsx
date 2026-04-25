@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { formatMoney } from "@/lib/format";
 import { getCartWithItems } from "@/lib/cart-data";
-import { prisma } from "@/lib/prisma";
 import { CheckoutForm } from "@/components/CheckoutForm";
 
 export const metadata = { title: "Checkout · BazarMart" };

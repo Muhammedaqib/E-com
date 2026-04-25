@@ -118,6 +118,99 @@ export async function placeOrderAction(formData: FormData) {
   redirect("/orders?placed=1");
 }
 
+export async function cancelOrderAction(orderId: number) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Sign in required" };
+  }
+
+  try {
+    const result = await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: { id: orderId },
+        include: { items: true }
+      });
+
+      if (!order) {
+        throw new Error("Order not found");
+      }
+
+      if (order.userId !== session.user.id) {
+        throw new Error("Unauthorized");
+      }
+
+      if (order.status === "CANCELLED") {
+        throw new Error("Order is already cancelled");
+      }
+
+      if (order.status === "SHIPPED" || order.status === "DELIVERED") {
+        throw new Error("Cannot cancel an order that has already been shipped or delivered");
+      }
+
+      // Update order status
+      await tx.order.update({
+        where: { id: orderId },
+        data: { status: "CANCELLED" }
+      });
+
+      // Restore stock
+      for (const item of order.items) {
+        if (item.productId) {
+          await tx.product.update({
+            where: { id: item.productId },
+            data: { stock: { increment: item.quantity } }
+          });
+        }
+      }
+
+      return { success: true };
+    });
+
+    revalidatePath("/orders");
+    revalidatePath(`/admin/orders`);
+    revalidatePath(`/admin/orders/${orderId}`);
+    return result;
+  } catch (error) {
+    console.error("Order cancellation error:", error);
+    return { error: error instanceof Error ? error.message : "Could not cancel order" };
+  }
+}
+
+export async function deleteOrderAction(orderId: number) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { error: "Sign in required" };
+  }
+
+  try {
+    const order = await prisma.order.findUnique({
+      where: { id: orderId }
+    });
+
+    if (!order) {
+      return { error: "Order not found" };
+    }
+
+    if (order.userId !== session.user.id) {
+      return { error: "Unauthorized" };
+    }
+
+    if (order.status !== "CANCELLED") {
+      return { error: "Only cancelled orders can be removed" };
+    }
+
+    await prisma.order.delete({
+      where: { id: orderId }
+    });
+
+    revalidatePath("/orders");
+    return { success: true };
+  } catch (error) {
+    console.error("Order deletion error:", error);
+    return { error: "Could not remove order" };
+  }
+}
+
 export async function submitPlaceOrderAction(formData: FormData): Promise<void> {
   const result = await placeOrderAction(formData);
   if (result && "error" in result) {

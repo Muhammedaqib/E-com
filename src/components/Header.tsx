@@ -17,7 +17,10 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#131921] text-white shadow-md">
       <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:gap-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2 text-xl font-bold tracking-tight">
+        <Link href="/" className="flex shrink-0 items-center gap-2 text-xl font-bold tracking-tight group">
+          <div className="text-amber-500 transition-transform group-hover:scale-110">
+            <HomeIcon />
+          </div>
           <span className="rounded bg-amber-500 px-2 py-0.5 text-slate-900">Bazar</span>
           <span className="hidden font-semibold sm:inline">Mart</span>
         </Link>
@@ -53,12 +56,12 @@ export async function Header() {
               </Link>
             )}
           </span>
-          {session?.user?.role === "ADMIN" && (
+          {(session?.user?.role === "ADMIN" || session?.user?.role === "PRODUCT_MANAGER" || session?.user?.role === "CUSTOMER_CARE") && (
             <Link
               href="/admin"
               className="rounded border border-slate-600 px-2 py-1 hover:border-amber-500 hover:text-amber-400"
             >
-              Admin
+              {session.user.role === "CUSTOMER_CARE" ? "CC" : "Admin"}
             </Link>
           )}
           <Link
@@ -120,6 +123,25 @@ function UserIcon() {
     >
       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
       <circle cx="12" cy="7" r="4" />
+    </svg>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="20" 
+      height="20" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2.5" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
+      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <polyline points="9 22 9 12 15 12 15 22" />
     </svg>
   );
 }

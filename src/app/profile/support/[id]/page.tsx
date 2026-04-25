@@ -15,6 +15,7 @@ export default async function UserChatPage({ params }: { params: { id: string } 
     where: { id },
     include: {
       messages: {
+        include: { sender: true },
         orderBy: { createdAt: "asc" }
       }
     }

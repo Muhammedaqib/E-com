@@ -3,7 +3,14 @@
 import { useState, useTransition, useRef, useEffect } from "react";
 import { updateProfileAction } from "@/lib/actions/profile";
 
-export function ProfileForm({ user }: { user: any }) {
+interface User {
+  name?: string | null;
+  email: string;
+  phone?: string | null;
+  address?: string | null;
+}
+
+export function ProfileForm({ user }: { user: User }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -38,7 +45,7 @@ export function ProfileForm({ user }: { user: any }) {
             if (newPass) newPass.value = "";
           }
         }
-      } catch (err) {
+      } catch {
         setError("Something went wrong. Please try again.");
       }
     });

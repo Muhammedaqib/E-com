@@ -12,6 +12,15 @@ export default async function ProfileLayout({
     redirect("/login?callbackUrl=/profile");
   }
 
+  // Fetch latest role from DB to ensure it's not stale
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true }
+  });
+  
+  const role = dbUser?.role;
+  const isStaff = role === "ADMIN" || role === "PRODUCT_MANAGER" || role === "CUSTOMER_CARE";
+
   return (
     <div className="grid gap-8 lg:grid-cols-[200px_1fr]">
       <aside className="h-fit rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#0f172a] shadow-sm">
@@ -35,6 +44,11 @@ export default async function ProfileLayout({
           <Link href="/profile/support" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
             Messages
           </Link>
+          {isStaff && (
+            <Link href="/admin" className="mt-2 flex items-center gap-2 rounded bg-amber-500/10 px-3 py-2 text-sm font-bold text-amber-600 hover:bg-amber-500/20 transition-all border border-amber-500/20">
+              <span className="text-lg">⚙️</span> Admin Panel
+            </Link>
+          )}
           <div className="my-4 border-t border-slate-100 dark:border-slate-800" />
           <Link href="/" className="rounded px-3 py-2 font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
             ← Storefront

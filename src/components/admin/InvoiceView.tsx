@@ -5,13 +5,42 @@ import { formatMoney } from "@/lib/format";
 import { updateInvoiceAction } from "@/lib/actions/admin-invoice";
 import Link from "next/link";
 
-export function InvoiceView({ order }: { order: any }) {
+interface OrderItem {
+  id: string;
+  title: string;
+  price: number;
+  quantity: number;
+  hideQuantity: boolean;
+  productId: string | null;
+}
+
+interface Order {
+  id: number;
+  address: string;
+  createdAt: Date | string;
+  status: string;
+  user: {
+    email: string;
+  };
+  items: OrderItem[];
+}
+
+interface Address {
+  fullName: string;
+  line1: string;
+  line2?: string;
+  city: string;
+  postalCode: string;
+  phone: string;
+}
+
+export function InvoiceView({ order }: { order: Order }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isPending, startTransition] = useTransition();
   
-  const parsedAddress = JSON.parse(order.address);
-  const [address, setAddress] = useState(parsedAddress);
-  const [items, setItems] = useState(order.items);
+  const parsedAddress = JSON.parse(order.address) as Address;
+  const [address, setAddress] = useState<Address>(parsedAddress);
+  const [items, setItems] = useState<OrderItem[]>(order.items);
 
   const handleSave = () => {
     startTransition(async () => {
@@ -24,14 +53,14 @@ export function InvoiceView({ order }: { order: any }) {
     });
   };
 
-  const handleItemChange = (id: string, field: string, value: any) => {
-    setItems(items.map((item: any) => 
+  const handleItemChange = (id: string, field: keyof OrderItem, value: string | number | boolean | null) => {
+    setItems(items.map((item) => 
       item.id === id ? { ...item, [field]: value } : item
     ));
   };
 
   const handleAddItem = () => {
-    const newItem = {
+    const newItem: OrderItem = {
       id: `new-${Date.now()}`,
       title: "New Item",
       price: 0,
@@ -47,10 +76,10 @@ export function InvoiceView({ order }: { order: any }) {
       alert("Invoice must have at least one item.");
       return;
     }
-    setItems(items.filter((i: any) => i.id !== id));
+    setItems(items.filter((i) => i.id !== id));
   };
 
-  const total = items.reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+  const total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
     <div className="bg-white p-8 shadow-lg border border-slate-200 dark:bg-slate-900 dark:border-slate-800 rounded-lg min-h-[1000px] flex flex-col">
@@ -138,7 +167,7 @@ export function InvoiceView({ order }: { order: any }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-            {items.map((item: any) => (
+            {items.map((item) => (
               <tr key={item.id} className="text-sm">
                 <td className="py-6">
                   {isEditing ? (

@@ -5,11 +5,14 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { Prisma, PrismaClient } from "@prisma/client";
+import path from "node:path";
+import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
 const userUpdateSchema = z.object({
   name: z.string().min(1).max(100),
   email: z.string().email(),
-  role: z.enum(["USER", "ADMIN"]),
+  role: z.enum(["USER", "ADMIN", "PRODUCT_MANAGER", "CUSTOMER_CARE"]),
   isSuspended: z.coerce.boolean(),
 });
 
@@ -37,12 +40,35 @@ export async function updateUserAction(userId: string, formData: FormData) {
   const { name, email, role, isSuspended } = parsed.data;
 
   try {
+    // Attempt with the default (possibly cached) client
     await prisma.user.update({
       where: { id: userId },
       data: { name, email, role, isSuspended },
     });
-  } catch (err) {
-    return { error: { email: ["Email might already be in use"] } };
+  } catch (error) {
+    // Fallback if the cached client doesn't recognize the new role Enum values
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (errorMessage.includes("Invalid value") || errorMessage.includes("Expected Role")) {
+      console.log("Prisma cache error detected during user update, retrying with fresh client...");
+      const databasePath = path.join(process.cwd(), "dev.db");
+      const adapter = new PrismaBetterSqlite3({ url: databasePath });
+      const freshClient = new PrismaClient({ adapter });
+      
+      try {
+        await freshClient.user.update({
+          where: { id: userId },
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          data: { name, email, role: role as any, isSuspended },
+        });
+        await freshClient.$disconnect();
+      } catch (retryError) {
+        return { error: "Retry failed: " + (retryError instanceof Error ? retryError.message : "Unknown error") };
+      }
+    } else if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return { error: "This email address is already in use." };
+    } else {
+      return { error: "Failed to update user: " + errorMessage };
+    }
   }
 
   revalidatePath("/admin/users");
@@ -60,7 +86,7 @@ export async function deleteUserAction(userId: string) {
 
   try {
     await prisma.user.delete({ where: { id: userId } });
-  } catch (err) {
+  } catch {
     return { error: "Could not delete user. They may have active orders." };
   }
 
@@ -68,17 +94,11 @@ export async function deleteUserAction(userId: string) {
   redirect("/admin/users");
 }
 
-export async function submitDeleteUserAction(userId: string, _formData: FormData): Promise<void> {
-  const result = await deleteUserAction(userId);
-  if (result && "error" in result) {
-    alert(result.error);
-    return;
-  }
+/** Form actions must resolve to void for Next.js types; use these wrappers. */
+export async function submitDeleteUserAction(userId: string): Promise<void> {
+  await deleteUserAction(userId);
 }
 
 export async function submitUpdateUserAction(userId: string, formData: FormData): Promise<void> {
-  const result = await updateUserAction(userId, formData);
-  if (result && "error" in result) {
-    return;
-  }
+  await updateUserAction(userId, formData);
 }

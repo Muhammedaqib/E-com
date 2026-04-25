@@ -2,8 +2,6 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { ProfileForm } from "@/components/ProfileForm";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import Link from "next/link";
 
 export const metadata = { title: "Your Profile · BazarMart" };
 

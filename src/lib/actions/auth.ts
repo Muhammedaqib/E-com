@@ -27,8 +27,8 @@ export async function loginAction(formData: FormData) {
     // If we get here, it succeeded (it doesn't throw if redirect: false)
     await mergeGuestCartAction();
     return { ok: true, callbackUrl };
-  } catch (error: any) {
-    if (error.type === "CredentialsSignin") {
+  } catch (error) {
+    if (error instanceof Error && 'type' in error && error.type === "CredentialsSignin") {
       return { error: "Invalid email or password" };
     }
     return { error: "Something went wrong" };

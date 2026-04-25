@@ -1,11 +1,7 @@
 import { hash } from "bcryptjs";
-import path from "node:path";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 import { PrismaClient } from "@prisma/client";
 
-const databasePath = path.join(process.cwd(), "dev.db");
-const adapter = new PrismaBetterSqlite3({ url: databasePath });
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 
 const categories = [
   { name: "Electronics", slug: "electronics" },
@@ -20,6 +16,7 @@ function img(seed: string) {
 }
 
 async function main() {
+  console.log("Cleaning up database...");
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.cartItem.deleteMany();
@@ -28,6 +25,7 @@ async function main() {
   await prisma.category.deleteMany();
   await prisma.user.deleteMany();
 
+  console.log("Creating users...");
   const adminHash = await hash("admin123", 12);
   const userHash = await hash("demo1234", 12);
 
@@ -49,6 +47,7 @@ async function main() {
     },
   });
 
+  console.log("Creating categories...");
   const cats = await prisma.$transaction(
     categories.map((c) =>
       prisma.category.create({ data: { name: c.name, slug: c.slug } }),
@@ -229,6 +228,7 @@ async function main() {
     },
   ];
 
+  console.log("Creating products...");
   for (const p of products) {
     await prisma.product.create({
       data: {
@@ -244,6 +244,20 @@ async function main() {
       },
     });
   }
+
+  console.log("Updating site settings...");
+  await prisma.siteSettings.upsert({
+    where: { id: "default" },
+    update: {},
+    create: {
+      id: "default",
+      bannerTitle: "Shop smarter today",
+      bannerText: "Fast delivery, secure checkout, and thousands of products — a full storefront demo built with Next.js and Prisma.",
+      bannerButton: "Browse all products",
+      footerAboutTitle: "BazarMart",
+      footerAboutText: "Demo marketplace built with Next.js, Prisma, and NextAuth — inspired by modern e-commerce experiences.",
+    },
+  });
 
   console.log("Seed complete. Accounts:");
   console.log("  admin@demo.com / admin123");

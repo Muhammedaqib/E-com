@@ -3,7 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -23,14 +24,15 @@ model User {
 }
 
 model Complaint {
-  id        String          @id @default(cuid())
-  userId    String
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subject   String
-  status    ComplaintStatus @default(PENDING)
-  messages  ComplaintMessage[]
-  createdAt DateTime        @default(now())
-  updatedAt DateTime        @updatedAt
+  id         String          @id @default(cuid())
+  userId     String
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject    String
+  targetRole Role            @default(ADMIN)
+  status     ComplaintStatus @default(PENDING)
+  messages   ComplaintMessage[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
 }
 
 model ComplaintMessage {
@@ -118,6 +120,8 @@ model OrderItem {
 enum Role {
   USER
   ADMIN
+  PRODUCT_MANAGER
+  CUSTOMER_CARE
 }
 
 enum OrderStatus {
@@ -126,4 +130,25 @@ enum OrderStatus {
   SHIPPED
   DELIVERED
   CANCELLED
+}
+
+model SiteSettings {
+  id               String @id @default("default")
+  // Banner
+  bannerTitle      String @default("Shop smarter today")
+  bannerText       String @default("Fast delivery, secure checkout, and thousands of products — a full storefront demo built with Next.js and Prisma.")
+  bannerButton     String @default("Browse all products")
+  bannerImage      String?
+  
+  // Categories Section
+  categoriesTitle  String @default("Shop by category")
+  showCategories   Boolean @default(true)
+  
+  // Featured Section
+  featuredTitle    String @default("Featured picks")
+  showFeatured     Boolean @default(true)
+
+  // Footer
+  footerAboutTitle String @default("BazarMart")
+  footerAboutText  String @default("Demo marketplace built with Next.js, Prisma, and NextAuth — inspired by modern e-commerce experiences.")
 }

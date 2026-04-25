@@ -16,7 +16,7 @@ export async function updateOrderStatusAction(orderId: number, status: OrderStat
       where: { id: orderId },
       data: { status },
     });
-  } catch (err) {
+  } catch {
     return { error: "Failed to update order in database" };
   }
 

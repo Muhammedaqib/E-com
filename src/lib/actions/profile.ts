@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { hash, compare } from "bcryptjs";
 import { z } from "zod";
+import { Prisma } from "@prisma/client";
 
 const profileSchema = z.object({
   name: z.string().min(1).max(100),
@@ -50,11 +51,11 @@ export async function updateProfileAction(formData: FormData) {
   }
 
   // 3. Prepare data for update
-  const updateData: any = {};
-  
-  updateData.name = name.trim();
-  updateData.phone = phone?.trim() || null;
-  updateData.address = address?.trim() || null;
+  const updateData: Prisma.UserUpdateInput = {
+    name: name.trim(),
+    phone: phone?.trim() || null,
+    address: address?.trim() || null,
+  };
   
   // Only update email if it's different
   if (email.toLowerCase().trim() !== user.email.toLowerCase().trim()) {
@@ -82,8 +83,8 @@ export async function updateProfileAction(formData: FormData) {
     revalidatePath("/profile");
     revalidatePath("/", "layout");
     return { success: true };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Database update error:", err);
-    return { error: "Failed to update profile in database. Error: " + err.message };
+    return { error: "Failed to update profile in database. Error: " + (err instanceof Error ? err.message : "Unknown error") };
   }
 }

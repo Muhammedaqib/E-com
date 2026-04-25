@@ -41,7 +41,7 @@ export function ReplyForm({ complaintId, currentReply }: { complaintId: string, 
         disabled={isPending}
         className="rounded-lg bg-amber-500 px-6 py-2 font-bold text-slate-900 hover:bg-amber-400 disabled:opacity-50 shadow-sm transition-all active:scale-95"
       >
-        {isPending ? "Sending..." : "Send Reply & Resolve"}
+        {isPending ? "Sending..." : "Send Reply"}
       </button>
     </form>
   );

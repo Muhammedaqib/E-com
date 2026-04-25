@@ -53,6 +53,21 @@ export function ComplaintForm() {
           className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-amber-500"
         />
       </div>
+
+      <div>
+        <label className="block text-sm font-semibold mb-2">Send To</label>
+        <select
+          name="targetRole"
+          required
+          className="w-full rounded-xl border border-slate-300 p-3 text-sm dark:border-slate-700 dark:bg-slate-900 outline-none focus:ring-2 focus:ring-amber-500"
+        >
+          <option value="ADMIN">Admin</option>
+          <option value="CUSTOMER_CARE">Customer Care</option>
+          <option value="PRODUCT_MANAGER">Product Management</option>
+        </select>
+        <p className="mt-1 text-[10px] text-slate-500 uppercase tracking-wider px-1">Choose who should receive this report.</p>
+      </div>
+
       <div>
         <label className="block text-sm font-semibold mb-2">Message</label>
         <textarea

@@ -26,7 +26,7 @@ export function CheckoutForm({ subtotal, userName }: Props) {
         if (res && res.error) {
           setError(typeof res.error === "string" ? res.error : "Check the form for errors.");
         }
-      } catch (err) {
+      } catch {
         setError("An unexpected error occurred. Please try again.");
       }
     });

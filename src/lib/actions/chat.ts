@@ -20,8 +20,9 @@ export async function sendChatMessageAction(complaintId: string, content: string
 
     if (!complaint) return { error: "Conversation not found" };
 
-    // Check permission: User must own the complaint or be an Admin
-    if (complaint.userId !== session.user.id && session.user.role !== "ADMIN") {
+    // Check permission: User must own the complaint or be an Admin/Staff
+    const role = session.user.role;
+    if (complaint.userId !== session.user.id && role !== "ADMIN" && role !== "CUSTOMER_CARE" && role !== "PRODUCT_MANAGER") {
       return { error: "Unauthorized access to this chat" };
     }
 
@@ -36,7 +37,7 @@ export async function sendChatMessageAction(complaintId: string, content: string
     revalidatePath(`/profile/messages/${complaintId}`);
     revalidatePath(`/admin/complaints/${complaintId}`);
     return { success: true };
-  } catch (err) {
+  } catch {
     return { error: "Failed to send message" };
   }
 }

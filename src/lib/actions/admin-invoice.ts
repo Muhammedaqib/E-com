@@ -28,7 +28,7 @@ const updateInvoiceSchema = z.object({
   }))
 });
 
-export async function updateInvoiceAction(orderId: number, data: any) {
+export async function updateInvoiceAction(orderId: number, data: z.infer<typeof updateInvoiceSchema>) {
   await requireAdmin();
   
   const parsed = updateInvoiceSchema.safeParse(data);
@@ -99,8 +99,8 @@ export async function updateInvoiceAction(orderId: number, data: any) {
     revalidatePath(`/orders`);
     revalidatePath(`/orders/${orderId}/invoice`);
     return { success: true };
-  } catch (err: any) {
+  } catch (err) {
     console.error("Invoice update error:", err);
-    return { error: err.message || "Failed to update invoice in database" };
+    return { error: err instanceof Error ? err.message : "Failed to update invoice in database" };
   }
 }

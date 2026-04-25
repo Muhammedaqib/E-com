@@ -8,7 +8,8 @@ import { prisma } from "@/lib/prisma";
 
 async function requireAdmin() {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "ADMIN") {
+  const role = session?.user?.role;
+  if (role !== "ADMIN" && role !== "PRODUCT_MANAGER") {
     throw new Error("Unauthorized");
   }
 }
@@ -162,7 +163,6 @@ export async function submitUpdateProductAction(
 
 export async function deleteProductAction(
   productId: string,
-  _formData?: FormData,
 ) {
   await requireAdmin();
   try {
@@ -177,9 +177,8 @@ export async function deleteProductAction(
 
 export async function submitDeleteProductAction(
   productId: string,
-  _formData: FormData,
 ): Promise<void> {
-  const result = await deleteProductAction(productId, _formData);
+  const result = await deleteProductAction(productId);
   if (result && "error" in result) {
     return;
   }

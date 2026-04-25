@@ -3,18 +3,31 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { z } from "zod";
 
-async function requireAdmin() {
+export async function resolveComplaintAction(complaintId: string) {
   const session = await auth();
-  if (session?.user?.role !== "ADMIN") {
-    throw new Error("Unauthorized");
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "CUSTOMER_CARE" && session.user.role !== "PRODUCT_MANAGER")) {
+    return { error: "Unauthorized" };
+  }
+
+  try {
+    await prisma.complaint.update({
+      where: { id: complaintId },
+      data: { status: "RESOLVED" }
+    });
+
+    revalidatePath("/admin/complaints");
+    revalidatePath(`/admin/complaints/${complaintId}`);
+    revalidatePath("/profile/support");
+    return { success: true };
+  } catch {
+    return { error: "Failed to resolve complaint." };
   }
 }
 
 export async function replyToComplaintAction(complaintId: string, formData: FormData) {
   const session = await auth();
-  if (session?.user?.role !== "ADMIN") {
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "CUSTOMER_CARE" && session.user.role !== "PRODUCT_MANAGER")) {
     return { error: "Unauthorized" };
   }
 
@@ -32,20 +45,31 @@ export async function replyToComplaintAction(complaintId: string, formData: Form
           content: reply.trim()
         }
       });
-
-      await tx.complaint.update({
-        where: { id: complaintId },
-        data: {
-          status: "RESOLVED"
-        }
-      });
     });
 
     revalidatePath("/admin/complaints");
     revalidatePath(`/admin/complaints/${complaintId}`);
     revalidatePath("/profile/support");
     return { success: true };
-  } catch (err) {
+  } catch {
     return { error: "Failed to send reply." };
+  }
+}
+
+export async function deleteComplaintAction(complaintId: string) {
+  const session = await auth();
+  if (!session?.user || (session.user.role !== "ADMIN" && session.user.role !== "CUSTOMER_CARE" && session.user.role !== "PRODUCT_MANAGER")) {
+    return { error: "Unauthorized" };
+  }
+
+  try {
+    await prisma.complaint.delete({
+      where: { id: complaintId }
+    });
+
+    revalidatePath("/admin/complaints");
+    return { success: true };
+  } catch {
+    return { error: "Failed to delete complaint." };
   }
 }

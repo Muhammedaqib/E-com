@@ -8,7 +8,8 @@ import { prisma } from "@/lib/prisma";
 
 async function requireAdmin() {
   const session = await auth();
-  if (session?.user?.role !== "ADMIN") {
+  const role = session?.user?.role;
+  if (role !== "ADMIN" && role !== "PRODUCT_MANAGER") {
     throw new Error("Unauthorized");
   }
 }
@@ -36,7 +37,7 @@ export async function createCategoryAction(formData: FormData) {
     await prisma.category.create({
       data: { name, slug },
     });
-  } catch (err) {
+  } catch {
     return { error: { slug: ["Slug must be unique"] } };
   }
 
@@ -63,7 +64,7 @@ export async function updateCategoryAction(id: string, formData: FormData) {
       where: { id },
       data: { name, slug },
     });
-  } catch (err) {
+  } catch {
     return { error: { slug: ["Slug must be unique"] } };
   }
 
@@ -82,7 +83,7 @@ export async function deleteCategoryAction(id: string) {
     }
 
     await prisma.category.delete({ where: { id } });
-  } catch (err) {
+  } catch {
     return { error: "Could not delete category." };
   }
 

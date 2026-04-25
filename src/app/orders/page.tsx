@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { formatMoney } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
+import { CancelOrderButton } from "@/components/CancelOrderButton";
+import { RemoveOrderButton } from "@/components/RemoveOrderButton";
 
 export const metadata = { title: "Your orders · BazarMart" };
 
@@ -68,6 +70,8 @@ export default async function OrdersPage({
             } catch {
               addr = null;
             }
+            const canCancel = order.status !== "SHIPPED" && order.status !== "DELIVERED" && order.status !== "CANCELLED";
+            
             return (
               <li
                 key={order.id}
@@ -82,10 +86,16 @@ export default async function OrdersPage({
                     {new Date(order.createdAt).toLocaleString()}
                   </div>
                   <div className="font-semibold">{formatMoney(order.total)}</div>
-                  <div className="flex items-center gap-3">
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-900 dark:bg-amber-900/40 dark:text-amber-200">
+                  <div className="flex items-center gap-2">
+                    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      order.status === "CANCELLED" 
+                        ? "bg-red-100 text-red-900 dark:bg-red-900/40 dark:text-red-200"
+                        : "bg-amber-100 text-amber-900 dark:bg-amber-900/40 dark:text-amber-200"
+                    }`}>
                       {order.status}
                     </span>
+                    {canCancel && <CancelOrderButton orderId={order.id} />}
+                    {order.status === "CANCELLED" && <RemoveOrderButton orderId={order.id} />}
                     <Link
                       href={`/orders/${order.id}/invoice`}
                       className="rounded bg-slate-900 px-3 py-1 text-xs font-bold text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600"
