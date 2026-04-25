@@ -8,22 +8,28 @@ export default async function HomePage() {
   let categories: Category[] = [];
   let settings: SiteSettings | null = null;
 
+  // Fetch data independently to pinpoint which query fails
   try {
-    const [f, c, s] = await Promise.all([
-      prisma.product.findMany({
-        where: { featured: true },
-        take: 8,
-        orderBy: { createdAt: "desc" },
-        include: { category: true },
-      }) as Promise<(Product & { category: Category })[]>,
-      prisma.category.findMany({ orderBy: { name: "asc" } }),
-      prisma.siteSettings.findUnique({ where: { id: "default" } }),
-    ]);
-    featured = f;
-    categories = c;
-    settings = s;
-  } catch (error) {
-    console.error("Home page data fetch failed:", error);
+    featured = (await prisma.product.findMany({
+      where: { featured: true },
+      take: 8,
+      orderBy: { createdAt: "desc" },
+      include: { category: true },
+    })) as (Product & { category: Category })[];
+  } catch (e) {
+    console.error("Home page: Failed to fetch featured products", e);
+  }
+
+  try {
+    categories = await prisma.category.findMany({ orderBy: { name: "asc" } });
+  } catch (e) {
+    console.error("Home page: Failed to fetch categories", e);
+  }
+
+  try {
+    settings = await prisma.siteSettings.findUnique({ where: { id: "default" } });
+  } catch (e) {
+    console.error("Home page: Failed to fetch site settings", e);
   }
 
   const s = settings || {
@@ -102,7 +108,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {!s.showFeatured && !s.showCategories && (
+      {(!s.showFeatured || featured.length === 0) && (!s.showCategories || categories.length === 0) && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <h2 className="text-xl font-medium text-slate-400">Welcome to BazarMart</h2>
           <p className="mt-2 text-slate-500">Check out our full collection of products below.</p>
