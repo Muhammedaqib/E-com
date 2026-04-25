@@ -4,8 +4,13 @@ import { compare } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@prisma/client";
 
+if (!process.env.AUTH_SECRET && process.env.NODE_ENV === "production") {
+  console.warn("[AUTH] WARNING: AUTH_SECRET is missing! Login will fail.");
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   trustHost: true,
+  secret: process.env.AUTH_SECRET,
   providers: [
     Credentials({
       credentials: {
