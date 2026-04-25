@@ -2,10 +2,6 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 
-import { Prisma, PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import path from "node:path";
-
 export const metadata = { title: "Admin · BazarMart" };
 
 export default async function AdminHomePage() {
@@ -16,17 +12,13 @@ export default async function AdminHomePage() {
   // Ensure we have the latest role if possible
   if (session?.user?.id) {
     try {
-      const databasePath = path.join(process.cwd(), "dev.db");
-      const adapter = new PrismaBetterSqlite3({ url: databasePath });
-      const freshClient = new PrismaClient({ adapter });
-      const dbUser = await freshClient.user.findUnique({
+      const dbUser = await prisma.user.findUnique({
         where: { id: session.user.id },
         select: { role: true }
       });
       if (dbUser) role = dbUser.role;
-      await freshClient.$disconnect();
     } catch (e) {
-      console.error("Fresh client role fetch failed:", e);
+      console.error("Role fetch failed:", e);
     }
   }
 
