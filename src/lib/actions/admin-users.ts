@@ -56,6 +56,14 @@ export async function updateUserAction(userId: string, formData: FormData) {
   redirect("/admin/users");
 }
 
+/** Form actions must resolve to void; use these wrappers. */
+export async function submitUpdateUserAction(
+  userId: string,
+  formData: FormData,
+): Promise<void> {
+  await updateUserAction(userId, formData);
+}
+
 export async function deleteUserAction(userId: string) {
   await requireAdmin();
 
@@ -71,4 +79,10 @@ export async function deleteUserAction(userId: string) {
   }
 
   revalidatePath("/admin/users");
+}
+
+export async function submitDeleteUserAction(
+  userId: string,
+): Promise<void> {
+  await deleteUserAction(userId);
 }
