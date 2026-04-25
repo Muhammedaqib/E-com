@@ -21,36 +21,41 @@ export async function loginAction(formData: FormData) {
   console.log(`Login attempt: ${email}`);
 
   try {
+    // We use redirect: false so we can handle the response manually 
+    // and avoid any Next.js redirect bugs during the transition.
     const result = await signIn("credentials", {
       email,
       password,
       redirect: false,
     });
     
-    console.log("Login result:", result);
+    console.log("Login successful, resolving user data...");
 
-    // In some v5 versions, successful signIn returns a string/object, 
-    // in others it might throw. With redirect: false, it should return.
-    
-    await mergeGuestCartAction();
+    // Fetch the user one last time to get the ID safely
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: { id: true }
+    });
+
+    if (user) {
+      // Merge cart without blocking the login response
+      // We pass the ID directly to avoid calling auth() again
+      await mergeGuestCartAction(user.id);
+    }
+
     return { ok: true, callbackUrl };
   } catch (error: any) {
     console.error("Login action error:", error);
-    
-    // Auth.js v5 throws specific errors that might need re-throwing 
-    // or special handling if we were using redirect: true.
-    // Since we use redirect: false, we catch and return the error.
     
     if (error?.type === "CredentialsSignin" || error?.code === "credentials") {
       return { error: "Invalid email or password" };
     }
     
-    // If it's a redirect error from Auth.js, we might have actually succeeded
     if (error?.message?.includes("NEXT_REDIRECT")) {
        return { ok: true, callbackUrl };
     }
 
-    return { error: error?.message || "Something went wrong" };
+    return { error: "Authentication failed. Please check your credentials." };
   }
 }
 

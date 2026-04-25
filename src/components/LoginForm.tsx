@@ -29,8 +29,8 @@ export function LoginForm() {
         return;
       }
       
-      router.push(callbackUrl);
-      router.refresh();
+      // Use hard redirect to ensure the browser picks up the new session cookies instantly
+      window.location.href = callbackUrl;
     });
   }
 

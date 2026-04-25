@@ -46,61 +46,76 @@ async function resolveCart() {
   return cart;
 }
 
-export async function mergeGuestCartAction() {
-  const session = await auth();
-  if (!session?.user?.id) return;
+/**
+ * Merges the guest cart into the user's cart.
+ * Refactored for performance and to avoid auth deadlocks.
+ */
+export async function mergeGuestCartAction(providedUserId?: string) {
+  let userId = providedUserId;
+  
+  if (!userId) {
+    const session = await auth();
+    userId = session?.user?.id;
+  }
 
-  const userExists = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: { id: true }
-  });
-  if (!userExists) return;
+  if (!userId) return;
 
   const cookieStore = await cookies();
   const sessionId = cookieStore.get(GUEST_CART_COOKIE)?.value;
   if (!sessionId) return;
 
-  const guestCart = await prisma.cart.findUnique({
-    where: { sessionId },
-    include: { items: true },
-  });
-  if (!guestCart || guestCart.items.length === 0) {
-    cookieStore.delete(GUEST_CART_COOKIE);
-    return;
-  }
-
-  let userCart = await prisma.cart.findUnique({
-    where: { userId: session.user.id },
-    include: { items: true },
-  });
-  if (!userCart) {
-    userCart = await prisma.cart.create({
-      data: { userId: session.user.id },
+  try {
+    const guestCart = await prisma.cart.findUnique({
+      where: { sessionId },
       include: { items: true },
     });
-  }
 
-  for (const line of guestCart.items) {
-    const existing = userCart.items.find((i) => i.productId === line.productId);
-    if (existing) {
-      await prisma.cartItem.update({
-        where: { id: existing.id },
-        data: { quantity: existing.quantity + line.quantity },
-      });
-    } else {
-      await prisma.cartItem.create({
-        data: {
-          cartId: userCart.id,
-          productId: line.productId,
-          quantity: line.quantity,
-        },
+    if (!guestCart || guestCart.items.length === 0) {
+      cookieStore.delete(GUEST_CART_COOKIE);
+      return;
+    }
+
+    let userCart = await prisma.cart.findUnique({
+      where: { userId },
+      include: { items: true },
+    });
+
+    if (!userCart) {
+      userCart = await prisma.cart.create({
+        data: { userId },
+        include: { items: true },
       });
     }
-  }
 
-  await prisma.cart.delete({ where: { id: guestCart.id } });
-  cookieStore.delete(GUEST_CART_COOKIE);
-  revalidatePath("/cart");
+    // Perform merge in a single batch to save round-trips to database
+    const operations = guestCart.items.map((line) => {
+      const existing = userCart!.items.find((i) => i.productId === line.productId);
+      if (existing) {
+        return prisma.cartItem.update({
+          where: { id: existing.id },
+          data: { quantity: existing.quantity + line.quantity },
+        });
+      } else {
+        return prisma.cartItem.create({
+          data: {
+            cartId: userCart!.id,
+            productId: line.productId,
+            quantity: line.quantity,
+          },
+        });
+      }
+    });
+
+    await prisma.$transaction([
+      ...operations,
+      prisma.cart.delete({ where: { id: guestCart.id } })
+    ]);
+
+    cookieStore.delete(GUEST_CART_COOKIE);
+    revalidatePath("/cart");
+  } catch (error) {
+    console.error("Failed to merge cart:", error);
+  }
 }
 
 export async function addToCartAction(productId: string, quantity: number) {
