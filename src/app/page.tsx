@@ -3,16 +3,27 @@ import { ProductCard } from "@/components/ProductCard";
 import { prisma } from "@/lib/prisma";
 
 export default async function HomePage() {
-  const [featured, categories, settings] = await Promise.all([
-    prisma.product.findMany({
-      where: { featured: true },
-      take: 8,
-      orderBy: { createdAt: "desc" },
-      include: { category: true },
-    }),
-    prisma.category.findMany({ orderBy: { name: "asc" } }),
-    prisma.siteSettings.findUnique({ where: { id: "default" } }),
-  ]);
+  let featured = [];
+  let categories = [];
+  let settings = null;
+
+  try {
+    const [f, c, s] = await Promise.all([
+      prisma.product.findMany({
+        where: { featured: true },
+        take: 8,
+        orderBy: { createdAt: "desc" },
+        include: { category: true },
+      }),
+      prisma.category.findMany({ orderBy: { name: "asc" } }),
+      prisma.siteSettings.findUnique({ where: { id: "default" } }),
+    ]);
+    featured = f;
+    categories = c;
+    settings = s;
+  } catch (error) {
+    console.error("Home page data fetch failed:", error);
+  }
 
   const s = settings || {
     bannerTitle: "Shop smarter today",

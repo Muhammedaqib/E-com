@@ -9,10 +9,16 @@ import { SignOutButton } from "@/components/SignOutButton";
 export async function Header() {
   const session = await auth();
   const cartCount = await getCartItemCount();
-  const categories = await prisma.category.findMany({
-    orderBy: { name: "asc" },
-    take: 12,
-  });
+  
+  let categories = [];
+  try {
+    categories = await prisma.category.findMany({
+      orderBy: { name: "asc" },
+      take: 12,
+    });
+  } catch (error) {
+    console.error("Header category fetch failed:", error);
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#131921] text-white shadow-md">
