@@ -18,20 +18,39 @@ export async function loginAction(formData: FormData) {
   const password = formData.get("password") as string;
   const callbackUrl = (formData.get("callbackUrl") as string) || "/";
 
+  console.log(`Login attempt: ${email}`);
+
   try {
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email,
       password,
       redirect: false,
     });
-    // If we get here, it succeeded (it doesn't throw if redirect: false)
+    
+    console.log("Login result:", result);
+
+    // In some v5 versions, successful signIn returns a string/object, 
+    // in others it might throw. With redirect: false, it should return.
+    
     await mergeGuestCartAction();
     return { ok: true, callbackUrl };
-  } catch (error) {
-    if (error instanceof Error && 'type' in error && error.type === "CredentialsSignin") {
+  } catch (error: any) {
+    console.error("Login action error:", error);
+    
+    // Auth.js v5 throws specific errors that might need re-throwing 
+    // or special handling if we were using redirect: true.
+    // Since we use redirect: false, we catch and return the error.
+    
+    if (error?.type === "CredentialsSignin" || error?.code === "credentials") {
       return { error: "Invalid email or password" };
     }
-    return { error: "Something went wrong" };
+    
+    // If it's a redirect error from Auth.js, we might have actually succeeded
+    if (error?.message?.includes("NEXT_REDIRECT")) {
+       return { ok: true, callbackUrl };
+    }
+
+    return { error: error?.message || "Something went wrong" };
   }
 }
 
@@ -47,20 +66,25 @@ export async function registerAction(formData: FormData) {
 
   const { name, email, password } = parsed.data;
 
-  const exists = await prisma.user.findUnique({ where: { email } });
-  if (exists) {
-    return { error: { email: ["An account with this email already exists"] } };
+  try {
+    const exists = await prisma.user.findUnique({ where: { email } });
+    if (exists) {
+      return { error: { email: ["An account with this email already exists"] } };
+    }
+
+    const passwordHash = await hash(password, 12);
+    await prisma.user.create({
+      data: {
+        name,
+        email,
+        password: passwordHash,
+      },
+    });
+
+    revalidatePath("/");
+    return { ok: true };
+  } catch (error) {
+    console.error("Register error:", error);
+    return { error: { server: ["An unexpected error occurred"] } };
   }
-
-  const passwordHash = await hash(password, 12);
-  await prisma.user.create({
-    data: {
-      name,
-      email,
-      password: passwordHash,
-    },
-  });
-
-  revalidatePath("/");
-  return { ok: true };
 }
