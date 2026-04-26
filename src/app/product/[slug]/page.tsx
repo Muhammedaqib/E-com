@@ -56,7 +56,7 @@ export default async function ProductDetailPage({ params }: Props) {
           )}
         </p>
         <div className="mt-8">
-          <AddToCartButton productId={product.id} stock={product.stock} />
+          <AddToCartButton productId={product.id} />
         </div>
         <div className="mt-10 border-t border-slate-200 pt-6 dark:border-slate-800">
           <h2 className="font-semibold text-slate-900 dark:text-white">About this item</h2>
