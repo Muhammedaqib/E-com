@@ -57,7 +57,10 @@ export function MobileMenu({
         isOpen ? "translate-x-0" : "-translate-x-full"
       }`}>
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-xl font-bold text-amber-600">Navigation</h2>
+          <div className="flex items-baseline">
+            <span className="text-xl font-black tracking-tighter text-slate-900 dark:text-white">BAZAR</span>
+            <span className="text-xl font-medium tracking-tighter text-amber-600">MART</span>
+          </div>
           <button onClick={() => setIsOpen(false)} className="p-2 text-slate-500">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M18 6 6 18" />

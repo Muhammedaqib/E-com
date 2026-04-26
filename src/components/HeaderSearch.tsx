@@ -1,39 +1,46 @@
-"use client";
+"use server";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { useState, FormEvent } from "react";
+import { redirect } from "next/navigation";
 
-export function HeaderSearch() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [q, setQ] = useState(searchParams.get("q") ?? "");
-
-  function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
-    if (q.trim()) {
-      params.set("q", q.trim());
+export async function HeaderSearch() {
+  async function searchAction(formData: FormData) {
+    "use server";
+    const query = formData.get("q") as string;
+    if (query?.trim()) {
+      redirect(`/products?q=${encodeURIComponent(query.trim())}`);
     } else {
-      params.delete("q");
+      redirect("/products");
     }
-    router.push(`/products?${params.toString()}`);
   }
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto flex w-full max-w-2xl flex-1 gap-2">
+    <form action={searchAction} className="relative flex w-full items-center">
       <input
+        type="text"
         name="q"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        placeholder="Search products..."
-        className="min-w-0 flex-1 rounded-md border border-slate-600 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-500 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+        placeholder="Search for products..."
+        className="h-10 w-full rounded-lg bg-slate-800 border-none px-4 pl-10 text-sm text-white placeholder-slate-400 focus:bg-white focus:text-slate-900 focus:ring-2 focus:ring-amber-500 transition-all outline-none"
       />
-      <button
+      <div className="absolute left-3 flex items-center pointer-events-none text-slate-400">
+        <SearchIcon />
+      </div>
+      
+      {/* Search Button (Hidden on Mobile, Visible on Tablet/Desktop) */}
+      <button 
         type="submit"
-        className="rounded-md bg-amber-500 px-4 py-2 font-semibold text-slate-900 transition hover:bg-amber-400"
+        className="hidden sm:block absolute right-1.5 h-7 rounded-md bg-amber-500 px-3 text-[10px] font-bold text-slate-900 hover:bg-amber-400 uppercase tracking-widest transition-colors"
       >
         Search
       </button>
     </form>
+  );
+}
+
+function SearchIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.3-4.3" />
+    </svg>
   );
 }
