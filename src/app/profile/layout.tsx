@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { ProfileNav } from "@/components/ProfileNav";
 
 export default async function ProfileLayout({
   children,
@@ -23,39 +24,21 @@ export default async function ProfileLayout({
   const isStaff = role === "ADMIN" || role === "PRODUCT_MANAGER" || role === "CUSTOMER_CARE";
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[200px_1fr]">
-      <aside className="h-fit rounded-xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#0f172a] shadow-sm">
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Account</p>
-        <nav className="mt-6 flex flex-col gap-1 text-sm">
-          <Link href="/profile" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
-            Profile Details
-          </Link>
-          <Link href="/orders" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
-            My Orders
-          </Link>
-          <Link href="/orders/report" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
-            Report Issue
-          </Link>
-          <Link href="/profile/invoices" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
-            Recent Invoices
-          </Link>
-          <Link href="/profile/appearance" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
-            Appearance
-          </Link>
-          <Link href="/profile/support" className="rounded px-3 py-2 font-semibold text-slate-600 hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800 transition-all">
-            Messages
-          </Link>
-          {isStaff && (
-            <Link href="/admin" className="mt-2 flex items-center gap-2 rounded bg-amber-500/10 px-3 py-2 text-sm font-bold text-amber-600 hover:bg-amber-500/20 transition-all border border-amber-500/20">
-              <span className="text-lg">⚙️</span> Admin Panel
-            </Link>
-          )}
-          <div className="my-4 border-t border-slate-100 dark:border-slate-800" />
-          <Link href="/" className="rounded px-3 py-2 font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
-            ← Storefront
-          </Link>
-        </nav>
+    <div className="grid gap-8 lg:grid-cols-[250px_1fr]">
+      <aside className="h-fit space-y-2">
+        <div className="rounded-2xl border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-[#0f172a] shadow-sm">
+          <p className="px-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-4">Account Settings</p>
+          <ProfileNav isStaff={isStaff} />
+        </div>
+
+        <Link 
+          href="/" 
+          className="flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-bold text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+        >
+          ← Back to Storefront
+        </Link>
       </aside>
+
       <div className="min-w-0">{children}</div>
     </div>
   );
