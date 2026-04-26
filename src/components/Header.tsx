@@ -5,6 +5,7 @@ import { getCartItemCount } from "@/lib/cart-data";
 import { prisma } from "@/lib/prisma";
 import { HeaderSearch } from "@/components/HeaderSearch";
 import { SignOutButton } from "@/components/SignOutButton";
+import { MobileMenu } from "@/components/MobileMenu";
 import type { Category } from "@prisma/client";
 
 export async function Header() {
@@ -24,8 +25,11 @@ export async function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-slate-800 bg-[#131921] text-white shadow-md">
       <div className="mx-auto max-w-7xl px-4 py-3">
-        {/* Top Row: Logo, Search (desktop), and Nav */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-2 sm:gap-6">
+          {/* Mobile Menu Trigger */}
+          <MobileMenu session={session} categories={categories} />
+
+          {/* Logo */}
           <Link href="/" className="flex shrink-0 items-center gap-2 text-xl font-bold tracking-tight group">
             <div className="text-amber-500 transition-transform group-hover:scale-110">
               <HomeIcon />
@@ -34,46 +38,52 @@ export async function Header() {
             <span className="hidden font-semibold xs:inline">Mart</span>
           </Link>
 
-          {/* Desktop Search */}
+          {/* Desktop Search (Hidden on Mobile) */}
           <div className="hidden flex-1 max-w-2xl md:block">
             <Suspense fallback={<div className="h-10 w-full animate-pulse rounded-md bg-slate-700" />}>
               <HeaderSearch />
             </Suspense>
           </div>
 
-          <nav className="flex items-center gap-2 sm:gap-4">
-            {session?.user ? (
-              <Link href="/profile" className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-slate-200 group-hover:bg-amber-500 group-hover:text-slate-900 shadow-inner">
-                  <UserIcon />
-                </div>
-                <div className="hidden sm:flex flex-col items-start leading-none">
-                  <span className="text-[10px] text-slate-500">Account</span>
-                  <span className="font-bold text-white text-xs">
-                    {session.user.name?.split(" ")[0] ?? "User"}
-                  </span>
-                </div>
-              </Link>
-            ) : (
-              <Link href="/login" className="text-sm font-medium hover:text-amber-400">
-                Sign in
-              </Link>
-            )}
+          {/* Right Nav */}
+          <nav className="flex flex-1 items-center justify-end gap-3 sm:gap-4 md:flex-none">
+            {/* Desktop Account (Hidden on Mobile) */}
+            <div className="hidden md:block">
+              {session?.user ? (
+                <Link href="/profile" className="flex items-center gap-2 hover:text-amber-400 transition-colors group">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-slate-200 group-hover:bg-amber-500 group-hover:text-slate-900 shadow-inner">
+                    <UserIcon />
+                  </div>
+                  <div className="flex flex-col items-start leading-none">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">My Account</span>
+                    <span className="font-bold text-white text-xs">
+                      {session.user.name?.split(" ")[0] ?? "User"}
+                    </span>
+                  </div>
+                </Link>
+              ) : (
+                <Link href="/login" className="text-xs font-bold uppercase tracking-widest hover:text-amber-400">
+                  Sign in
+                </Link>
+              )}
+            </div>
 
-            <Link href="/cart" className="flex items-center gap-1.5 rounded-full bg-slate-800 px-3 py-1.5 hover:bg-slate-700 border border-slate-700">
+            {/* Cart Button (Always Visible) */}
+            <Link href="/cart" className="flex items-center gap-1.5 rounded-full bg-amber-500 px-3 py-1.5 hover:bg-amber-400 border border-amber-600 transition-all active:scale-95 shadow-lg">
               <CartIcon />
-              <span className="font-bold text-amber-400 text-sm">{cartCount}</span>
+              <span className="font-black text-slate-900 text-sm">{cartCount}</span>
             </Link>
 
+            {/* Desktop Sign Out (Hidden on Mobile) */}
             {session?.user && (
-              <div className="hidden sm:block">
+              <div className="hidden md:block">
                 <SignOutButton />
               </div>
             )}
           </nav>
         </div>
 
-        {/* Mobile Search Row */}
+        {/* Mobile Search Row (Only visible on small screens) */}
         <div className="mt-3 md:hidden">
           <Suspense fallback={<div className="h-10 w-full animate-pulse rounded-md bg-slate-700" />}>
             <HeaderSearch />
@@ -81,17 +91,17 @@ export async function Header() {
         </div>
       </div>
 
-      {/* Categories Bar: Horizontal scroll on mobile */}
-      <div className="border-t border-slate-800 bg-[#232f3e] overflow-x-auto no-scrollbar">
-        <div className="mx-auto flex max-w-7xl items-center gap-x-5 px-4 py-2 text-xs font-medium whitespace-nowrap">
-          <Link href="/products" className="hover:text-amber-400 border-r border-slate-700 pr-4">
+      {/* Desktop Sub-nav (Categories) - Hidden on smallest mobile screens for simplicity as it's in the menu */}
+      <div className="hidden sm:block border-t border-slate-800 bg-[#232f3e] overflow-x-auto no-scrollbar">
+        <div className="mx-auto flex max-w-7xl items-center gap-x-5 px-4 py-2 text-xs font-bold uppercase tracking-widest whitespace-nowrap">
+          <Link href="/products" className="hover:text-amber-400 border-r border-slate-700 pr-4 text-amber-500">
             All Products
           </Link>
           {categories.map((c) => (
             <Link
               key={c.id}
               href={`/products?category=${c.slug}`}
-              className="text-slate-200 hover:text-amber-400"
+              className="text-slate-200 hover:text-amber-400 transition-colors"
             >
               {c.name}
             </Link>
