@@ -1,75 +1,59 @@
 "use client";
 
-import { useTransition, useState, useEffect } from "react";
+import { useTransition } from "react";
 import { addToCartAction } from "@/lib/actions/cart";
 
-type Props = {
-  productId: string;
-  disabled?: boolean;
-  stock: number;
-};
+export function AddToCartButton({ 
+  productId, 
+  quantity = 1,
+  isIconOnly = false
+}: { 
+  productId: string, 
+  quantity?: number,
+  isIconOnly?: boolean
+}) {
+  const [isPending, startTransition] = useTransition();
 
-export function AddToCartButton({ productId, disabled, stock }: Props) {
-  const [pending, startTransition] = useTransition();
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [quantity, setQuantity] = useState(1);
-
-  const out = disabled ?? stock < 1;
-
-  useEffect(() => {
-    if (success) {
-      const timer = setTimeout(() => setSuccess(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [success]);
-
-  const handleAdd = () => {
-    setError(null);
+  function onClick() {
     startTransition(async () => {
-      const res = await addToCartAction(productId, quantity);
-      if (res && res.error) {
-        setError(res.error);
-      } else {
-        setSuccess(true);
-      }
+      await addToCartAction(productId, quantity);
     });
-  };
+  }
+
+  if (isIconOnly) {
+    return (
+      <button
+        onClick={onClick}
+        disabled={isPending}
+        className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500 text-slate-900 hover:bg-amber-400 disabled:opacity-50 transition-colors shadow-sm"
+        title="Add to cart"
+      >
+        {isPending ? (
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+        ) : (
+          <span className="text-xl">+</span>
+        )}
+      </button>
+    );
+  }
 
   return (
-    <div className="flex flex-col gap-4">
-      {!out && (
-        <div className="flex items-center gap-3">
-          <label htmlFor="quantity" className="text-sm font-medium">Quantity:</label>
-          <select
-            id="quantity"
-            value={quantity}
-            onChange={(e) => setQuantity(Number(e.target.value))}
-            className="rounded border border-slate-300 px-2 py-1 text-sm dark:border-slate-600 dark:bg-slate-950"
-            disabled={pending}
-          >
-            {[...Array(Math.min(10, stock))].map((_, i) => (
-              <option key={i + 1} value={i + 1}>{i + 1}</option>
-            ))}
-          </select>
-        </div>
+    <button
+      onClick={onClick}
+      disabled={isPending}
+      className="flex w-full items-center justify-center gap-2 rounded-lg bg-amber-500 px-6 py-3 font-bold text-slate-900 hover:bg-amber-400 disabled:opacity-50 transition-all active:scale-95 shadow-md"
+    >
+      {isPending ? (
+        <>
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-900 border-t-transparent" />
+          <span>Adding...</span>
+        </>
+      ) : (
+        <>
+          <span className="text-xl">🛒</span>
+          <span>Add to Cart</span>
+        </>
       )}
-      
-      <div className="flex flex-col gap-2">
-        <button
-          type="button"
-          disabled={out || pending}
-          onClick={handleAdd}
-          className={`w-full rounded-lg px-4 py-3 text-center font-semibold shadow transition disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-[200px] ${
-            success 
-              ? "bg-green-500 text-white" 
-              : "bg-amber-500 text-slate-900 hover:bg-amber-400"
-          }`}
-        >
-          {out ? "Out of stock" : pending ? "Adding…" : success ? "Added!" : "Add to cart"}
-        </button>
-        {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
-      </div>
-    </div>
+    </button>
   );
 }
