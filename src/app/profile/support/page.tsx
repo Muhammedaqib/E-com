@@ -18,17 +18,24 @@ export default async function SupportPage() {
   });
 
   const complaintsWithLastMessage = await Promise.all(complaints.map(async (c) => {
-    // Try to catch error if messages table doesn't exist yet for some reason
     let lastMessage = null;
+    let unreadCount = 0;
     try {
       lastMessage = await prisma.complaintMessage.findFirst({
         where: { complaintId: c.id },
         orderBy: { createdAt: "desc" },
       });
+      unreadCount = await prisma.complaintMessage.count({
+        where: {
+          complaintId: c.id,
+          senderId: { not: session.user.id },
+          isRead: false
+        }
+      });
     } catch (e) {
       console.error(`Error fetching messages for complaint ${c.id}:`, e);
     }
-    return { ...c, lastMessage };
+    return { ...c, lastMessage, unreadCount };
   }));
 
   return (
@@ -52,7 +59,14 @@ export default async function SupportPage() {
               className="group bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:border-amber-500 shadow-sm transition-all block"
             >
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg group-hover:text-amber-600 transition-colors">{c.subject}</h3>
+                <div className="flex items-center gap-3">
+                  <h3 className="font-bold text-lg group-hover:text-amber-600 transition-colors">{c.subject}</h3>
+                  {c.unreadCount > 0 && (
+                    <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-black text-white">
+                      {c.unreadCount}
+                    </span>
+                  )}
+                </div>
                 <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${
                   c.status === 'RESOLVED' 
                     ? 'bg-green-100 text-green-700' 

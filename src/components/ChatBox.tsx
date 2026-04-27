@@ -1,7 +1,6 @@
 "use client";
-
 import { useState, useTransition, useEffect, useRef } from "react";
-import { sendChatMessageAction } from "@/lib/actions/chat";
+import { sendChatMessageAction, markMessagesAsReadAction } from "@/lib/actions/chat";
 
 interface Message {
   id: string;
@@ -26,7 +25,13 @@ export function ChatBox({ complaintId, messages, currentUserId }: {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Mark messages as read when conversation is opened
+    markMessagesAsReadAction(complaintId);
+  }, [complaintId, messages.length]);
+
+  useEffect(() => {
     setMounted(true);
+...
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }

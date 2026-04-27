@@ -41,3 +41,23 @@ export async function sendChatMessageAction(complaintId: string, content: string
     return { error: "Failed to send message" };
   }
 }
+
+export async function markMessagesAsReadAction(complaintId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return;
+
+  try {
+    await prisma.complaintMessage.updateMany({
+      where: {
+        complaintId,
+        senderId: { not: session.user.id },
+        isRead: false,
+      },
+      data: { isRead: true }
+    });
+    revalidatePath("/profile/support");
+    revalidatePath("/admin/complaints");
+  } catch (error) {
+    console.error("Failed to mark messages as read:", error);
+  }
+}

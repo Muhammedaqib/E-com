@@ -25,7 +25,16 @@ export default async function AdminComplaintsPage({
       : targetRole
       ? { targetRole } 
       : { user: { role: "USER" } },
-    include: { user: true },
+    include: { 
+      user: true,
+      _count: {
+        select: {
+          messages: {
+            where: { isRead: false }
+          }
+        }
+      }
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -69,7 +78,14 @@ export default async function AdminComplaintsPage({
                   <p className="text-xs text-slate-500">{c.user.email}</p>
                 </td>
                 <td className="px-6 py-4 font-medium text-slate-700 dark:text-slate-300">
-                  {c.subject}
+                  <div className="flex items-center gap-2">
+                    {c.subject}
+                    {c._count.messages > 0 && (
+                      <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-black text-white">
+                        {c._count.messages}
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4">
                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
